@@ -1,0 +1,51 @@
+services:
+
+  postgre-db:
+    image: postgres:15
+    container_name: postgre-db
+    restart: always
+    env_file:
+      - ./db/.env.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - backend-net
+
+
+  django-app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: django-app
+    volumes:
+      - static_volume:/app/static
+    env_file:
+      - ./backend/.env.production
+    depends_on:
+      - postgre-db
+    networks:
+      - backend-net
+
+  nginx-proxy:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: nginx-proxy
+    volumes:
+      - static_volume:/app/static
+    depends_on:
+      - django-app
+    ports:
+      - "80:80"
+    networks:
+      - backend-net
+
+
+volumes:
+  static_volume:
+  postgres_data:
+
+networks:
+  backend-net:
