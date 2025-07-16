@@ -1,14 +1,14 @@
 "use client";
 
-import { Button, Input } from "@headlessui/react";
+import { Button, Input, } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface PopupMenuProps {
   isOpen: boolean;
-  togglePoppup: () => void;
+  setIsOpen: () => void;
 }
 
-const PopupUp: React.FC<PopupMenuProps> = ({ isOpen, togglePoppup }) => {
+const RoomPopupUp = ({ isOpen, setIsOpen }: PopupMenuProps) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -20,18 +20,18 @@ const PopupUp: React.FC<PopupMenuProps> = ({ isOpen, togglePoppup }) => {
           exit={{ opacity: 0 }}
         >
           <div className="bg-white p-8 rounded-lg shadow-lg w-3/5 h-3/5 text-center items-center relative">
-            <h2 className="text-2xl font-bold mb-10 text-cyan-400">
+            <div className="text-2xl font-bold mb-10 text-cyan-400">
               新規投稿をする
-            </h2>
+            </div>
             <Input
               type="search"
               id="default-search"
-              className="block w-full p-3 px-11 text-base text-gray-900 border border-gray-300 rounded-2xl bg-gray-100 hover:bg-gray-200 focus:outline-none "
+              className="mt-10 block w-full p-3 px-11 text-base text-gray-900 border border-gray-300 rounded-2xl bg-gray-100 hover:bg-gray-200 focus:outline-none "
               placeholder="投稿したい内容を記入してください"
               required
             />
             <Button
-              onClick={togglePoppup}
+              onClick={setIsOpen}
               className="absolute bottom-10 left-10 text-white w-2/5 py-3 rounded-full bg-red-600 hover:bg-red-800"
             >
               閉じる
@@ -46,4 +46,4 @@ const PopupUp: React.FC<PopupMenuProps> = ({ isOpen, togglePoppup }) => {
   );
 };
 
-export default PopupUp;
+export default RoomPopupUp;

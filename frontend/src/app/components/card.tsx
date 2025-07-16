@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { NextPage } from "next";
 
 const Card: NextPage = () => {
@@ -14,13 +13,6 @@ const Card: NextPage = () => {
               TECH
             </a>
             <div className="p-10 flex items-center">
-              <Image
-                src="/images/logo_transparent.png"
-                width={40}
-                height={40}
-                className="h-auto w-auto p-0 rounded-full"
-                alt={""}
-              />
             </div>
           </div>
           <div className="space-y-4 p-4">

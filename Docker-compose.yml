@@ -1,9 +1,7 @@
 services:
-
   postgre-db:
     image: postgres:15
     container_name: postgre-db
-    restart: always
     env_file:
       - ./db/.env.db
     volumes:
@@ -13,20 +11,21 @@ services:
     networks:
       - backend-net
 
-
-  django-app:
+  rails-app:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: django-app
+    container_name: rails-app
     volumes:
-      - static_volume:/app/static
+      - static_volume:/app/public
     env_file:
       - ./backend/.env.production
     depends_on:
       - postgre-db
     networks:
       - backend-net
+    ports:
+      - "8000:8000"
 
   nginx-proxy:
     build:
@@ -36,12 +35,13 @@ services:
     volumes:
       - static_volume:/app/static
     depends_on:
-      - django-app
+      - rails-app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "80:80"
     networks:
       - backend-net
-
 
 volumes:
   static_volume:
