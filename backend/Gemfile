@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.4.4'
+ruby '3.3.8'
 gem 'rails', '~> 7.1'
 
 # DB
@@ -21,3 +21,7 @@ gem 'active_model_serializers'  # JSONの構造制御（任意）
 # その他
 gem 'dotenv-rails'              # .env読み込み
 gem 'puma'                      # WSGI相当のサーバー（デフォルト）
+
+gem 'bootsnap', require: false
+gem 'sprockets-rails'
+

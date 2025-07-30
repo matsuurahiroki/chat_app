@@ -3,23 +3,26 @@ services:
     image: postgres:15
     container_name: postgre-db
     env_file:
-      - ./db/.env.db
+      - db/.env.db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
     networks:
       - backend-net
 
-  rails-app:
+  rails-api:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: rails-app
+    container_name: rails-api
+    command:
+      - bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8000 -b '0.0.0.0'"
     volumes:
       - static_volume:/app/public
     env_file:
-      - ./backend/.env.production
+      - backend/.env.production
+      - db/.env.db
     depends_on:
       - postgre-db
     networks:
@@ -35,7 +38,7 @@ services:
     volumes:
       - static_volume:/app/static
     depends_on:
-      - rails-app
+      - rails-api
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

@@ -1,35 +1,43 @@
-FROM ruby:3.4.4-slim
+FROM ruby:3.3.8
 
 # 必要パッケージをインストール
 RUN apt-get update -qq && \
     apt-get install -y \
-    nodejs \
     postgresql-client \
     build-essential \
+    nodejs \
     libpq-dev \
     libssl-dev \
     libyaml-dev \
     zlib1g-dev \
-    libgmp-dev
+    libgmp-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 作業ディレクトリ設定
+# 作業ディレクトリ
 ENV APP_HOME=/app
 WORKDIR $APP_HOME
 
-# Gemfile をコピーして bundle install
-COPY backend/Gemfile $APP_HOME/Gemfile
-COPY backend/Gemfile.lock $APP_HOME/Gemfile.lock
-RUN bundle install
+# Gemfile と Gemfile.lock をコピー
+COPY backend/Gemfile backend/Gemfile.lock ./
 
-# Rails を明示的にインストール
+# Gem install
+RUN bundle install
 RUN gem install rails
 
-# アプリ全体をコピー（start.sh含む）
-COPY backend/ $APP_HOME/
-RUN chmod +x $APP_HOME/start.sh
+# start.sh を先にコピーして実行権限付与
+COPY backend/start.sh ./start.sh
 
-# ポートを開放
+# envファイルをコピー
+COPY backend/.env.production /app/.env.production
+
+# アプリケーション全体をコピー
+COPY backend/ .
+
+# 権限付与
+RUN chmod +x ./start.sh
+
+# ポート開放
 EXPOSE 8000
 
-# 起動スクリプト
-CMD ["bash", "/app/start.sh"]
+# 起動
+ENTRYPOINT ["bash", "./start.sh"]
