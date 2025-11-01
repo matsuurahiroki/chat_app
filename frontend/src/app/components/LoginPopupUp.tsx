@@ -1,42 +1,50 @@
 "use client";
-
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import GoogleLoginButton from "./GoogleLoginButton";
 
-interface PopupMenuProps {
-  isOpen: boolean;
-  setIsOpen: () => void;
-}
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children?: React.ReactNode;
+};
 
-const RoomPopupUp = ({ isOpen, setIsOpen }: PopupMenuProps) => {
+export default function Modal({ open, onClose, title, children }: Props) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    if (open) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
-      {isOpen && (
+      {open && (
         <motion.div
-          className="fixed inset-0 w-full flex items-center justify-center bg-gray-900 bg-opacity-80 z-20"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          exit={{ opacity: 0 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onClick={onClose}
         >
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[90%] h-[90%] text-center items-center relative">
-            <div className="mx-auto text-center items-center flex flex-col">
-              <button
-                className="mx-auto flex text-center items-center"
-                onClick={setIsOpen}
-              >
-                戻る
-              </button>
-              <div className="text-2xl font-bold text-cyan-400">
-                SNSでログインx
-              </div>
-              <GoogleLoginButton />
-            </div>
-          </div>
+          <motion.div
+            className="relative bg-white p-6 rounded-lg shadow-lg w-[90%] h-[90%] max-w-xl"
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              aria-label="閉じる"
+              className="absolute right-3 top-3"
+              onClick={onClose}
+            >×</button>
+            {title && <h2 className="mb-4 text-2xl font-bold">{title}</h2>}
+            {children}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
-};
-
-export default RoomPopupUp;
+}

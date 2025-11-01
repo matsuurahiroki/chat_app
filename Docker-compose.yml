@@ -5,7 +5,7 @@ services:
     env_file:
       - db/.env.db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     networks:
@@ -17,7 +17,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: rails-api
     command:
-      - bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8000 -b '0.0.0.0'"
+      - bash,-lc,"./start.sh"
     volumes:
       - static_volume:/app/public
     env_file:
@@ -43,6 +43,16 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "80:80"
+    networks:
+      - backend-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hiroki020628@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 0000
+    ports:
+      - "5050:80"
     networks:
       - backend-net
 

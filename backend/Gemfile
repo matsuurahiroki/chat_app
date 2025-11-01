@@ -8,6 +8,7 @@ gem 'pg', '>= 1.4'  # PostgreSQLドライバ
 
 # 認証
 gem 'devise'                      # ログイン/ユーザー管理
+gem 'devise_token_auth'           #outh認証
 gem 'devise-jwt'                 # JWT連携
 gem 'omniauth'                   # OAuth2
 gem 'omniauth-google-oauth2'    # Google認証

@@ -1,20 +1,20 @@
 default: &default
-  adapter: <%= ENV['POSTGRES_ENGINE'] || 'postgresql' %>
+  adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-  username: <%= ENV['POSTGRES_USER'] %>
-  password: <%= ENV['POSTGRES_PASSWORD'] %>
-  host: <%= ENV['POSTGRES_HOST'] %>
-  port: <%= ENV['POSTGRES_PORT'] %>
+  host: postgre-db
+  port: 5432
+  username: dbusera
+  password: "0000"
+  pool: 5
 
 development:
   <<: *default
-  database: <%= ENV['POSTGRES_NAME'] %>
+  database: chatapp_development
 
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_NAME'] %>_test
+  database: chatapp_test
 
 production:
   <<: *default
-  database: <%= ENV['POSTGRES_NAME'] %>
+  database: chatapp_production

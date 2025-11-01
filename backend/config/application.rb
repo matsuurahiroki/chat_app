@@ -23,5 +23,9 @@ module Backend
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # ActiveRecordのSQLログを有効化
+    ActiveRecord::Base.logger = Logger.new(STDOUT)
+
   end
 end

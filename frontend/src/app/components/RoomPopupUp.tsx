@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input, } from "@headlessui/react";
+import { Button, Input } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface PopupMenuProps {
