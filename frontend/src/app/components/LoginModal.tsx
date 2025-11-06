@@ -70,9 +70,9 @@ export default function LoginModal({ opened, onClose }: Props) {
   return (
     <Modal
       classNames={{
-        content: "bg-white rounded-2xl text-sky-500 p-6",
-        header: "border-b border-gray-200",
-        title: "text-sky-600 font-semibold",
+        content: "bg-white rounded-2xl text-cyan-400 p-6",
+        header: "bg-white text-cyan-400",
+        title: "text-cyan-400 font-semibold text-xl",
       }}
       opened={opened}
       onClose={onClose}
@@ -82,22 +82,37 @@ export default function LoginModal({ opened, onClose }: Props) {
       <Stack>
         <Group grow>
           <Button
-            className=""
+            className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
             onClick={() => signIn("google", { callbackUrl: "/" })}
           >
             Googleでログイン
           </Button>
-          <Button onClick={() => signIn("twitter", { callbackUrl: "/" })}>
+          <Button
+            className="bg-cyan-400 text-white  hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+            onClick={() => signIn("twitter", { callbackUrl: "/" })}
+          >
             Xでログイン
           </Button>
         </Group>
 
-        <Divider label="または" />
+        <Divider className="font-semibold" label="または" />
 
         <Tabs defaultValue="login">
-          <Tabs.List>
-            <Tabs.Tab value="login">メールでログイン</Tabs.Tab>
-            <Tabs.Tab value="signup">新規登録</Tabs.Tab>
+          <Tabs.List className="p-1">
+            <Tabs.Tab
+              value="login"
+              className="bg-white text-cyan-400 font-semibold hover:bg-gray-200 hover:text-cyan-600  !border-0 hover: hover:!border-b-2 hover:!border-gray-300
+              data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500"
+            >
+              メールでログイン
+            </Tabs.Tab>
+            <Tabs.Tab
+              value="signup"
+              className="bg-white text-cyan-400 font-semibold hover:bg-gray-200 hover:text-cyan-600  !border-0 hover:!border-b-2 hover:!border-none
+              data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500"
+            >
+              新規登録
+            </Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="login" pt="sm">
@@ -109,14 +124,28 @@ export default function LoginModal({ opened, onClose }: Props) {
                   onChange={(e) => setEmailL(e.currentTarget.value)}
                   required
                   type="email"
+                  classNames={{
+                    input:
+                      "border-none bg-gray-200 text-black",
+                    label: "font-semibold",
+                  }}
                 />
                 <PasswordInput
                   label="パスワード"
                   value={passL}
                   onChange={(e) => setPassL(e.currentTarget.value)}
                   required
+                  classNames={{
+                    input:
+                      "border-none bg-gray-200 text-black",
+                    label: "font-semibold",
+                  }}
                 />
-                <Button type="submit" loading={busy}>
+                <Button
+                  type="submit"
+                  loading={busy}
+                  className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold hover:border-gray-300  "
+                >
                   ログイン
                 </Button>
               </Stack>
@@ -145,7 +174,11 @@ export default function LoginModal({ opened, onClose }: Props) {
                   onChange={(e) => setPassS(e.currentTarget.value)}
                   required
                 />
-                <Button type="submit" loading={busy}>
+                <Button
+                  type="submit"
+                  loading={busy}
+                  className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+                >
                   登録
                 </Button>
               </Stack>
