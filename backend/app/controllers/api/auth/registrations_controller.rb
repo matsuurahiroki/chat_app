@@ -1,12 +1,23 @@
-class Api::Auth::RegistrationsController < ApplicationController
-  protect_from_forgery with: :null_session
+# frozen_string_literal: true
 
-  def create
-    user = User.new(params.permit(:name, :email, :password))
-    if user.save
-      render json: { ok: true, user: { id: user.id, name: user.name, email: user.email } }, status: :created
-    else
-      render json: { ok: false, errors: user.errors.full_messages }, status: :unprocessable_entity
+module Api
+  module Auth
+    class RegistrationsController < ApplicationController
+      protect_from_forgery with: :null_session
+
+      def create
+        user = User.new(
+          name: params[:name],
+          email: params[:email],
+          password: params[:password] # ← Devise が encrypted_password に変換
+        )
+
+        if user.save
+          render json: { user_id: user.id }, status: :ok
+        else
+          render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
     end
   end
 end

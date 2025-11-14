@@ -1,21 +1,21 @@
-# app/controllers/api/auth/sessions_controller.rb
-class Api::Auth::SessionsController < ApplicationController
-  protect_from_forgery with: :exception
+# frozen_string_literal: true
 
-  def create
-    user = User.find_by(email: params[:email])
-    if user&.valid_password?(params[:password])
-      reset_session
-      sign_in(user)
-      head :no_content
-    else
-      head :unauthorized
+module Api
+  module Auth
+    class SessionsController < ApplicationController
+      protect_from_forgery with: :null_session
+
+      def create
+        user = User.find_by(email: params[:email])
+
+        return render(json: { error: 'invalid_credentials' }, status: :unauthorized) unless user&.valid_password?(params[:password])
+
+        render json: { user_id: user.id }, status: :ok
+      end
+
+      def destroy
+        head :no_content
+      end
     end
-  end
-
-  def destroy
-    reset_session
-    sign_out(current_user) if current_user
-    head :no_content
   end
 end

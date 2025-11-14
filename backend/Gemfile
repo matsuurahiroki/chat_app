@@ -1,23 +1,25 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 ruby '3.3.8'
 gem 'rails', '~> 7.1'
 
 # DB
-gem 'pg', '>= 1.4'  # PostgreSQLドライバ
+gem 'pg', '>= 1.4' # PostgreSQLドライバ
 
 # 認証
-gem 'devise'                      # ログイン/ユーザー管理
-gem 'devise_token_auth'           #outh認証
-gem 'devise-jwt'                 # JWT連携
-gem 'omniauth'                   # OAuth2
-gem 'omniauth-google-oauth2'    # Google認証
+gem 'devise' # ログイン/ユーザー管理
+gem 'devise-jwt' # JWT連携
+gem 'devise_token_auth' # outh認証
+gem 'omniauth' # OAuth2
 gem 'omniauth-facebook'         # Facebook認証
+gem 'omniauth-google-oauth2'    # Google認証
 
 # API構築
-gem 'jbuilder'                   # JSON出力
-gem 'rack-cors'                 # CORS対応
-gem 'active_model_serializers'  # JSONの構造制御（任意）
+gem 'active_model_serializers' # JSONの構造制御（任意）
+gem 'jbuilder' # JSON出力
+gem 'rack-cors' # CORS対応
 
 # その他
 gem 'dotenv-rails'              # .env読み込み
@@ -25,4 +27,3 @@ gem 'puma'                      # WSGI相当のサーバー（デフォルト）
 
 gem 'bootsnap', require: false
 gem 'sprockets-rails'
-

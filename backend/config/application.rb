@@ -1,6 +1,8 @@
-require_relative "boot"
+# frozen_string_literal: true
 
-require "rails/all"
+require_relative 'boot'
+
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -25,7 +27,6 @@ module Backend
     # config.eager_load_paths << Rails.root.join("extras")
 
     # ActiveRecordのSQLログを有効化
-    ActiveRecord::Base.logger = Logger.new(STDOUT)
-
+    ActiveRecord::Base.logger = Logger.new($stdout)
   end
 end

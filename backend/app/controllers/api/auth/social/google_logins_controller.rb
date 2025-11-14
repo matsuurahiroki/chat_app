@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/controllers/api/auth/social/google_logins_controller.rb
 module Api
   module Auth
