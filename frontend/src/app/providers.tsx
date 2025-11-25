@@ -1,6 +1,21 @@
+// src/app/providers.tsx
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-export default function Providers({children}:{children:React.ReactNode}) {
-  return <SessionProvider>{children}</SessionProvider>;
+import { MantineProvider, createTheme } from "@mantine/core";
+
+const theme = createTheme({});
+
+export default function AppProviders({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SessionProvider>
+      <MantineProvider theme={theme} defaultColorScheme="light">
+        {children}
+      </MantineProvider>
+    </SessionProvider>
+  );
 }

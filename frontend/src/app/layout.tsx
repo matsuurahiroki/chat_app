@@ -1,21 +1,19 @@
-import Providers from "./providers";
-import { MantineProvider, ColorSchemeScript, mantineHtmlProps, createTheme } from "@mantine/core";
-import "@mantine/core/styles.css";
-import "./globals.css";
-import AppClientShell from "./AppClientShell";
+// frontend/src/app/layout.tsx
 
-const theme = createTheme({});
+import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
+import AppClientShell from "./AppClientShell";
+import AppProviders from "./providers";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" {...mantineHtmlProps}>
-      <head><ColorSchemeScript defaultColorScheme="auto" /></head>
+      <head>
+        <ColorSchemeScript defaultColorScheme="light" />
+      </head>
       <body>
-        <Providers>
-          <MantineProvider theme={theme} defaultColorScheme="auto">
-            <AppClientShell>{children}</AppClientShell>
-          </MantineProvider>
-        </Providers>
+        <AppProviders>
+          <AppClientShell>{children}</AppClientShell>
+        </AppProviders>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 // app/api/bff/posts/route.ts
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/nextauth/auth";
 import crypto from "crypto";
 
 export async function GET() {

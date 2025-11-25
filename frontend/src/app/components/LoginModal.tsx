@@ -74,11 +74,11 @@ export default function LoginModal({ opened, onClose }: Props) {
 
   return (
     <Modal.Root opened={opened} onClose={onClose} centered>
-      <Modal.Overlay className="bg-black/40" />
+      <Modal.Overlay className="bg-black/10" />
 
-      <Modal.Content className="bg-white rounded-2xl text-cyan-400 p-6">
+      <Modal.Content className=" !rounded-2xl text-cyan-400 p-6">
         <Modal.Header className="bg-white text-cyan-400">
-          <Modal.Title className="text-cyan-400 font-semibold text-xl">
+          <Modal.Title className=" text-cyan-400 !font-semibold text-xl">
             ログイン / 新規登録
           </Modal.Title>
           <Modal.CloseButton className="!bg-transparent !hover:bg-transparent !text-cyan-400" />
@@ -88,21 +88,21 @@ export default function LoginModal({ opened, onClose }: Props) {
           <Stack>
             <Group grow>
               <Button
-                className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+                className="!bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
                 onClick={() => signIn("google", { callbackUrl: "/" })}
               >
                 Googleでログイン
               </Button>
 
               <Button
-                className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+                className="!bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
                 onClick={() => signIn("twitter", { callbackUrl: "/" })}
               >
                 Xでログイン
               </Button>
             </Group>
 
-            <Divider className="font-semibold" label="または" />
+            <Divider className="!font-semibold" label="または" />
 
             <Tabs defaultValue="login" variant="unstyled">
               <Tabs.List className="p-1 flex border-b border-gray-200">
@@ -131,7 +131,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       required
                       type="email"
                       classNames={{
-                        input: "border-none bg-gray-200 text-black",
+                        input: "border-none !bg-gray-200 text-black",
                         label: "font-semibold",
                       }}
                     />
@@ -142,7 +142,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       onChange={(e) => setPassL(e.currentTarget.value)}
                       required
                       classNames={{
-                        input: "border-none bg-gray-200 text-black",
+                        input: "!border-none !bg-gray-200 text-black",
                         label: "font-semibold",
                       }}
                     />
@@ -150,7 +150,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                     <Button
                       type="submit"
                       loading={busy}
-                      className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
                     >
                       ログイン
                     </Button>
@@ -167,7 +167,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       onChange={(e) => setNameS(e.currentTarget.value)}
                       required
                       classNames={{
-                        input: "border-none bg-gray-200 text-black",
+                        input: "border-none !bg-gray-200 text-black",
                         label: "font-semibold",
                       }}
                     />
@@ -179,7 +179,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       required
                       type="email"
                       classNames={{
-                        input: "border-none bg-gray-200 text-black",
+                        input: "border-none !bg-gray-200 text-black",
                         label: "font-semibold",
                       }}
                     />
@@ -190,7 +190,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       onChange={(e) => setPassS(e.currentTarget.value)}
                       required
                       classNames={{
-                        input: "border-none bg-gray-200 text-black",
+                        input: "border-none !bg-gray-200 text-black",
                         label: "font-semibold",
                       }}
                     />
@@ -198,7 +198,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                     <Button
                       type="submit"
                       loading={busy}
-                      className="bg-cyan-400 text-white hover:text-gray-200 hover:bg-cyan-600 font-semibold"
+                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
                     >
                       登録
                     </Button>

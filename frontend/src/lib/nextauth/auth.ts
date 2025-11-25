@@ -53,53 +53,64 @@ export const authOptions: NextAuthOptions = {
         }
         const data = await res.json();
 
+        const id = data.user?.id ?? data.id; //railsから帰ってきたユーザーオブジェクト
+        const userId = data.user?.id ?? data.id;
+        const email = data.user?.email ?? data.email;
+        const name = data.user?.name ?? data.name;
         return {
-          id: data.user?.id ?? data.id,
-          email: data.user?.email ?? data.email,
+          id, // NextAuth内部用
+          userId, // 自前フィールド
+          email,
+          name,
         };
       },
     }),
   ],
 
-  session: { strategy: "jwt", maxAge: 60 * 10 },
+  session: { strategy: "jwt", maxAge: 60 * 60 },
 
   callbacks: {
     async signIn({ account, user }) {
-  if (!account) return true;
+      if (!account) return true;
 
-  if (account.provider === "credentials") {
-    return true;
-  }
+      if (account.provider === "credentials") {
+        return true;
+      }
 
-  const body = JSON.stringify({
-    provider: account.provider,
-    providerSub: account.providerAccountId,
-    email: user.email ?? null,
-    name: user.name ?? null,
-  });
+      const body = JSON.stringify({
+        provider: account.provider,
+        providerSub: account.providerAccountId,
+        email: user.email ?? null,
+        name: user.name ?? null,
+      });
 
-  const r = await fetch(`${FRONT}/api/bff/auth/upsert`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-BFF-Token": process.env.BFF_SHARED_TOKEN ?? "",
+      const r = await fetch(`${FRONT}/api/bff/auth/upsert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-BFF-Token": process.env.BFF_SHARED_TOKEN ?? "",
+        },
+        body,
+      });
+
+      if (!r.ok) return false;
+
+      const { railsUserId, access, refresh, access_exp } = await r.json();
+      user.userId = String(railsUserId);
+      user.railsAccess = access;
+      user.railsAccessExp = access_exp;
+      user.railsRefresh = refresh;
+
+      return true;
     },
-    body,
-  });
 
-  if (!r.ok) return false;
-
-  const { railsUserId, access, refresh, access_exp } = await r.json();
-  user.userId = String(railsUserId);
-  user.railsAccess = access;
-  user.railsAccessExp = access_exp;
-  user.railsRefresh = refresh;
-
-  return true;
-},
-
-async jwt({ token, user, account }) {
-      if (user?.userId) token.userId = user.userId;
+    async jwt({ token, user, account }) {
+      if (user) {
+        const u = user;
+        token.userId = u.userId ?? token.userId;
+        token.name = u.name ?? token.name;
+        token.email = u.email ?? token.email;
+      }
 
       if (user?.railsAccess) {
         token.railsAccess = user.railsAccess;
@@ -118,6 +129,11 @@ async jwt({ token, user, account }) {
     async session({ session, token }) {
       session.userId = token.userId;
       session.provider = token.provider;
+      session.user = {
+        ...session.user,
+        name: token.name ?? session.user?.name,
+        email: token.email ?? session.user?.email,
+      };
       return session;
     },
   },
