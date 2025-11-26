@@ -27,3 +27,8 @@ gem 'puma'                      # WSGI相当のサーバー（デフォルト）
 
 gem 'bootsnap', require: false
 gem 'sprockets-rails'
+
+group :development, :test do
+  # すでにあるもの（pry, rspec など）の下あたりに
+  gem 'rubocop', require: false
+end

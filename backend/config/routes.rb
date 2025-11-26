@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   devise_for :users, defaults: { format: :json } # 既存
   namespace :api do
     resource :user, only: [:destroy] # => DELETE /api/user resourceは
+    resources :users, only: [:update]
     namespace :auth do
       post :signup, to: 'registrations#create'   # 自前SignUp(API)
       post :login,  to: 'sessions#create'        # 自前Login(API)

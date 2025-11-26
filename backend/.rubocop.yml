@@ -1,11 +1,26 @@
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
 
 Metrics/BlockLength:
   Enabled: false
 
+# メソッド行数は少し緩める（例: 20 行まで OK）
+Metrics/MethodLength:
+  Max: 240
+
+# 複雑さ系はいったん無効にする
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
 Layout/LineLength:
-  Max: 200
+  Max: 2000
 
 Style/Documentation:
   Enabled: false

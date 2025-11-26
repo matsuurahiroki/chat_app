@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Header from "./components/Header";
 import LoginModal from "./components/LoginModal";
 
+
 export default function AppClientShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const { status } = useSession(); // "authenticated" | "unauthenticated" | "loading"

@@ -8,7 +8,6 @@ module Api
       before_action :verify_bff_token!
 
       def create
-
         raw = params[:upsert].presence || params
         p = raw.permit(:provider, :providerSub, :email, :name)
         provider = p[:provider].to_s

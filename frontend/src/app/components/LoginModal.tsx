@@ -142,7 +142,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       onChange={(e) => setPassL(e.currentTarget.value)}
                       required
                       classNames={{
-                        input: "!border-none !bg-gray-200 text-black",
+                        input: "!border-none !bg-gray-200 text-black focus:ring-cyan-400 focus:border-cyan-400",
                         label: "font-semibold",
                       }}
                     />

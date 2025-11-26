@@ -32,6 +32,7 @@ services:
       - "8000:8000"
     environment:
       - BFF_SHARED_TOKEN=${BFF_SHARED_TOKEN}
+      - RAILS_ENV=development
 
   nginx-proxy:
     build:

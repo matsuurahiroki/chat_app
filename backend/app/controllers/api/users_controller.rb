@@ -6,6 +6,27 @@ module Api
     protect_from_forgery with: :null_session
     before_action :verify_bff_token!
 
+    def update
+      Rails.logger.debug "[Users#update] params = #{params.inspect}"
+      user = User.find_by(id: params[:id])
+      unless user
+        Rails.logger.debug "[Users#update] user not found id=#{params[:id]}"
+        return render json: { error: 'not_found' }, status: :not_found
+      end
+
+      if user.update(user_params)
+        Rails.logger.debug '[Users#update] update OK'
+        render json: {
+          id: user.id,
+          email: user.email,
+          name: user.name
+        }, status: :ok
+      else
+        Rails.logger.debug "[Users#update] validation error #{user.errors.full_messages}"
+        render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
     def destroy
       user = current_user
       if user.nil?
@@ -22,6 +43,10 @@ module Api
     end
 
     private
+
+    def user_params
+      params.permit(:name, :email) # ← これが user_params
+    end
 
     def verify_bff_token!
       expected = ENV['BFF_SHARED_TOKEN'].to_s
