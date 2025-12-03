@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react"; // ★追加
+import { useSession } from "next-auth/react";
 
 type Props = {
   initialName: string;
