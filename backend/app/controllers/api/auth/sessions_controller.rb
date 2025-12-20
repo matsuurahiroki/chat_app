@@ -21,7 +21,7 @@ module Api
           return
         end
 
-        # ★ ここが一番重要：id / email / name を返す
+        # ：id / email / name を返す
         render json: {
           id: user.id,
           email: user.email,

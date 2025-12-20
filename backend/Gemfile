@@ -31,4 +31,5 @@ gem 'sprockets-rails'
 group :development, :test do
   # すでにあるもの（pry, rspec など）の下あたりに
   gem 'rubocop', require: false
+  gem 'solargraph', require: false
 end

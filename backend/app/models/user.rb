@@ -4,9 +4,9 @@
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :rememberable, :validatable
-  has_many :identities, dependent: :destroy
-  has_many :rooms, dependent: :destroy
-  has_many :messages, dependent: :destroy
+  has_many :identities, dependent: :destroy # Outh関連のデータ
+  has_many :rooms, dependent: :destroy # 作成したルーム
+  has_many :messages, dependent: :destroy # 送信したメッセージ
 
   validate :password_complexity
 
@@ -16,7 +16,7 @@ class User < ApplicationRecord
     return if password.blank? # 未入力時（更新時など）はここでスキップ
     return if password =~ /\A(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}\z/
 
-    errors.add(:password, 'は英字と数字をそれぞれ1文字以上含めてください')
+    errors.add(:base, 'パスワードは英字と数字をそれぞれ1文字以上含めてください')
   end
 end
 

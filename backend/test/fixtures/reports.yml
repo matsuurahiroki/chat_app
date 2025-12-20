@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  reporter_id: 1
+  reported_id: 1
+  room_id: 1
+  message_id: 1
+  reason: MyText
+
+two:
+  reporter_id: 1
+  reported_id: 1
+  room_id: 1
+  message_id: 1
+  reason: MyText

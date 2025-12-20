@@ -11,6 +11,7 @@ module Api
       rooms = Room.includes(:user).order(created_at: :desc)
       render json: rooms.as_json(
         only: %i[id title user_id created_at],
+        methods: %i[created_at_text],
         include: {
           user: {
             only: %i[id name]
@@ -38,19 +39,21 @@ module Api
     end
 
     def show
-      room = Room.find_by(id: params[:id])
+      room = Room.includes(:user).find_by(id: params[:id])
       return render json: { error: 'not_found' }, status: :not_found unless room
 
-      render json: room.as_json(only: %i[id title user_id created_at])
+      render json: room.as_json(
+        only: %i[id title user_id created_at],
+        methods: %i[created_at_text],
+        include: {
+          user: {
+            only: %i[id name]
+          }
+        }
+      )
     end
 
     private
-
-    # ※ room_params はとりあえず使わず、上で params から直接拾う
-    #   強くしたくなったら後で整える
-    # def room_params
-    #   params.permit(:title, :user_id)
-    # end
 
     def verify_bff_token!
       expected = ENV['BFF_SHARED_TOKEN'].to_s

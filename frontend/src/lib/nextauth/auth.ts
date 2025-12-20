@@ -1,70 +1,106 @@
 // src/lib/nextauth/auth.ts
+
+// NextAuth が標準で提供する型を import
 import type { NextAuthOptions, User, Session, Account } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+
+// 各種プロバイダ（メールパスワード・Google・X）を利用
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import TwitterProvider from "next-auth/providers/twitter";
 
+// フロントエンドのベースURL（例: http://localhost:80）
+// BFF(API Route) にアクセスするときに使う
 const FRONT = process.env.NEXTAUTH_URL!;
 
-// アプリが使うユーザー型：Rails の users.id を userId に入れる
+// ==============================
+// 型定義（アプリ独自に拡張）
+// ==============================
+
+// アプリで使うユーザー型
+// - NextAuth の User 型を拡張して
+// - Rails の users.id を userId に保持する
 type AppUser = User & {
-  userId: string; // Rails users.id（文字列）
+  userId: string; // Rails users.id（文字列として扱う）
 };
 
-// JWT にも userId を足す（name/email は NextAuth 側ですでに定義済み）
+// JWT にも userId を持たせる
+// - name / email は NextAuth 側で既に定義済みなので追記不要
 type AppJWT = JWT & {
   userId?: string;
 };
 
-// Session にも userId を足す
+// セッションにも userId を持たせる
+// - useSession() から取得できる session に含めるため
 type AppSession = Session & {
   userId?: string;
 };
 
-// Rails から返ってくる想定の JSON
+// Rails から返ってくる認証系レスポンスの想定形
+// - /api/bff/auth/signup
+// - /api/bff/auth/login
+// などの返り値
 type RailsAuthResponse = {
   id?: number | string; // Rails users.id
   email?: string;
   name?: string;
 };
 
+// ==============================
+// NextAuth のメイン設定
+// ==============================
 export const authOptions: NextAuthOptions = {
+  // ------------------------------
+  // 認証プロバイダの定義
+  // ------------------------------
   providers: [
+    // Google ログイン
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // ログイン時にアカウント選択を毎回表示
       authorization: { params: { prompt: "select_account" } },
     }),
 
+    // X(Twitter) ログイン
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
-      version: "2.0",
+      version: "2.0", // OAuth 2.0 を使用
     }),
 
+    // メールアドレス + パスワードの独自認証
     CredentialsProvider({
+      // このプロバイダの名前（UI上に出る）
       name: "EmailPassword",
+
+      // フロントから受け取る認証情報の定義（型のヒント用）
       credentials: {
         email: {},
         password: {},
         name: {},
-        mode: {},
+        mode: {}, // "register"（新規登録） or "login"（ログイン）
       },
 
-      // メール & パスワードでの認証
+      // 実際の認証処理
+      // - フロントから送られてきた email/password を使って
+      // - BFF(API Route) 経由で Rails に問い合わせる
       async authorize(credentials): Promise<AppUser | null> {
-        // email / password が無ければ即失敗
+        // email / password が無ければ認証失敗
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        // 新規登録かログインかで叩く BFF を変える
+        // mode によって叩くエンドポイントを切り替え
+        // - "register": 新規登録 → /api/bff/auth/signup
+        // - それ以外: ログイン → /api/bff/auth/login
         const path =
           credentials.mode === "register"
             ? `${FRONT}/api/bff/auth/signup`
             : `${FRONT}/api/bff/auth/login`;
 
+        // BFF にメール/パスワード/名前を渡す
+        // BFF → Rails の /api/auth/signup or /api/auth/login に中継
         const res = await fetch(path, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -75,22 +111,47 @@ export const authOptions: NextAuthOptions = {
           }),
         });
 
+        // テキストとして一度全部受け取る（JSON でない可能性も考慮）
         const text = await res.text();
 
+        // ------------------------------
+        // 認証失敗時のエラーメッセージ処理
+        // ------------------------------
         if (!res.ok) {
-          console.error(
-            "[AUTH][Credentials] Rails signup/login error:",
-            res.status,
-            text
-          );
-          return null; // => CredentialsSignin
+          // フォールバックのメッセージ
+          let msg = "認証に失敗しました";
+
+          try {
+            const data = JSON.parse(text);
+
+            // Rails 側が { errors: ["xxx", "yyy"] } の形式で返している場合
+            if (Array.isArray(data?.errors) && data.errors.length > 0) {
+              // 配列を改行区切りの1つの文字列にする
+              msg = data.errors.join("\n");
+            }
+            // Rails 側が { error: "..." } の形式で返している場合
+            else if (typeof data?.error === "string") {
+              msg = data.error;
+            }
+          } catch {
+            // JSON でないレスポンスが来た場合のログ
+            console.error("[AUTH] Unexpected error response (not JSON):", text);
+            msg = "予期しないエラーが発生しました";
+          }
+
+          // ここで Error を投げると
+          // signIn("credentials", ..., { redirect: false }) の res.error に msg が入る
+          throw new Error(msg);
         }
 
-        // Rails のレスポンスをパース（失敗しても落とさない）
+        // ------------------------------
+        // 認証成功時のレスポンス処理
+        // ------------------------------
         let data: RailsAuthResponse = {};
         try {
           data = JSON.parse(text) as RailsAuthResponse;
         } catch (err) {
+          // ここに来るのは Rails が JSON を返さなかった時
           console.warn(
             "[AUTH][Credentials] Rails response is not JSON, raw text:",
             text,
@@ -98,7 +159,7 @@ export const authOptions: NextAuthOptions = {
           );
         }
 
-        // ★ id は必ず Rails の users.id を使う（email を代わりにしない）
+        // Rails 側が users.id を返していない場合は認証失敗扱い
         if (data.id == null) {
           console.error(
             "[AUTH][Credentials] Rails response has no id. Abort login.",
@@ -107,15 +168,19 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // id を文字列に正規化
         const id = String(data.id);
 
+        // email は Rails 優先、無ければ credentials の email を使う
         const email: string | undefined =
           data.email ?? (credentials.email as string | undefined);
 
+        // name は Rails 優先、無ければ credentials の name、それも無ければ null
         const name: string | null =
           data.name ?? (credentials.name as string | undefined) ?? null;
 
         if (!email) {
+          // 最終的に email が決まらない場合は異常として認証失敗扱い
           console.error(
             "[AUTH][Credentials] Missing email after normalize",
             data
@@ -123,9 +188,9 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // ★ NextAuth に返すユーザー
-        //   - id: NextAuth 内部用
-        //   - userId: アプリが使うID（Rails users.id）
+        // NextAuth に返すユーザーオブジェクト
+        // - id: NextAuth 内部でのユーザー識別子
+        // - userId: アプリ側で使う Rails users.id（統一用）
         const user: AppUser = {
           id,
           userId: id,
@@ -133,27 +198,43 @@ export const authOptions: NextAuthOptions = {
           name,
         };
 
-        return user;
+        return user; // ここで返したユーザーが jwt コールバックに渡される
       },
     }),
   ],
 
-  // セッションは JWT 方式
+  // ------------------------------
+  // セッションの方式
+  // ------------------------------
+  // - "jwt": セッション情報をサーバーではなく JWT に入れてブラウザ側に持たせる
+  // - maxAge: JWT の有効期限（秒）→ ここでは 1時間 (60 * 60)
   session: { strategy: "jwt", maxAge: 60 * 60 },
 
+  // ------------------------------
+  // 各種コールバック
+  // ------------------------------
   callbacks: {
-    // OAuth (Google / X) のときだけ Rails に upsert して userId をもらう
+    // signIn コールバック
+    // - OAuth (Google / X) でログインしたときに
+    // - Rails 側に /api/bff/auth/upsert を叩いて userId を払い出してもらう
     async signIn({ account, user }) {
+      // account が無い場合は特に処理せず通す
       if (!account) return true;
 
+      // Credentials（メール & パスワード）の場合
+      // - authorize 内で既に Rails と同期しているので何もしない
       if (account.provider === "credentials") {
-        // メール & パスワードのときは authorize で既に Rails と同期済み
         return true;
       }
 
+      // OAuth（Google / X）の場合はこちら
       const acc = account as Account;
       const appUser = user as AppUser;
 
+      // Rails の upsert 用に送るデータ
+      // - provider: "google" / "twitter"
+      // - providerSub: Google/X 側のユーザーID
+      // - email / name: 取れる範囲で渡す
       const body = JSON.stringify({
         provider: acc.provider,
         providerSub: acc.providerAccountId,
@@ -161,37 +242,45 @@ export const authOptions: NextAuthOptions = {
         name: appUser.name ?? null,
       });
 
+      // BFF 経由で Rails の /api/auth/upsert を呼び出す
       const r = await fetch(`${FRONT}/api/bff/auth/upsert`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // BFF と Rails 間の共有トークン（フロントには見せない）
           "X-BFF-Token": process.env.BFF_SHARED_TOKEN ?? "",
         },
         body,
       });
 
+      // upsert に失敗したらログイン自体を拒否
       if (!r.ok) return false;
 
+      // Rails から返された railsUserId（users.id）を受け取る
       const { railsUserId } = (await r.json()) as {
         railsUserId: string | number;
       };
 
-      // ★ OAuth のときも userId は Rails の users.id に統一
+      // OAuth ログインでも userId を Rails users.id に統一する
       appUser.userId = String(railsUserId);
 
-      return true;
+      return true; // ログイン続行
     },
 
-    // ★ JWT に userId / name / email をコピー
+    // jwt コールバック
+    // - サインイン時やセッション更新時に JWT の中身を組み立てる
     async jwt({ token, user, session, trigger }) {
       const t = token as AppJWT;
 
+      // サインイン直後（user が存在するタイミング）
       if (user) {
         const u = user as AppUser;
 
+        // Rails users.id を JWT にコピー
         if (u.userId) {
           t.userId = u.userId;
         }
+        // name / email も JWT にコピーしておく（後で session に流す）
         if (u.name !== undefined) {
           t.name = u.name;
         }
@@ -200,7 +289,8 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // ★ プロフィール更新後の useSession().update(...) から来るパス
+      // プロフィール更新時など
+      // - useSession().update(...) を呼ぶと trigger === "update" でここに来る
       if (trigger === "update" && session) {
         if (session.name) {
           t.name = session.name as string;
@@ -213,18 +303,22 @@ export const authOptions: NextAuthOptions = {
       return t;
     },
 
-    // ★ Session に userId / name / email を流し込む
+    // session コールバック
+    // - クライアント側の useSession() から見える session オブジェクトを整形
     async session({ session, token }) {
       const t = token as AppJWT;
       const s = session as AppSession;
 
-      // アプリが使う ID は常に userId
+      // アプリで使う ID は常に userId として扱う
+      // - クライアントから Rails API を叩くときなどに利用
       s.userId = t.userId;
 
+      // 既存の session.user があれば保持しつつ上書き
       const currentUser = s.user ?? {};
 
       s.user = {
         ...currentUser,
+        // name / email は JWT 側を優先し、無ければ既存の値を使う
         name: t.name ?? currentUser.name ?? null,
         email: t.email ?? currentUser.email ?? null,
       };
@@ -232,4 +326,4 @@ export const authOptions: NextAuthOptions = {
       return s;
     },
   },
-} satisfies NextAuthOptions;
+} satisfies NextAuthOptions; // authOptions が NextAuthOptions として型安全であることを保証

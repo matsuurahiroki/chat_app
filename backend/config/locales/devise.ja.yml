@@ -1,0 +1,14 @@
+ja:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      too_short: "は%{count}文字以上で入力してください"
+      taken: "はすでに登録されています"
+      invalid: "は正しい形式で入力してください"
+      blank: "を入力してください"
+
+  activerecord:
+    attributes:
+      user:
+        email: メールアドレス
+        password: パスワード

@@ -5,7 +5,7 @@
 import { Fragment, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Dialog, Transition } from "@headlessui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 type Props = {
   onLoginClick: () => void;
@@ -13,6 +13,7 @@ type Props = {
 
 export default function Header({ onLoginClick }: Props) {
   const route = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const [isPostOpen, setIsPostOpen] = useState(false);
   const [postTitle, setPostTitle] = useState("");
@@ -66,7 +67,6 @@ export default function Header({ onLoginClick }: Props) {
       setPostTitle("");
       setIsPostOpen(false);
 
-      // ★ ホームにリダイレクト
       route.push("/");
     } catch (err) {
       console.error(err);
@@ -76,13 +76,24 @@ export default function Header({ onLoginClick }: Props) {
 
   if (status === "loading") {
     return (
-      <header className="w-full h-[70px] flex items-center justify-center bg-white shadow-md relative z-10" />
+      <header className="w-full h-[70px] flex items-center justify-center bg-white shadow-md fixed z-10 " />
     );
   }
 
+  const handleLoginClick = () => {
+    // ホーム以外なら / に移動
+    if (pathname !== "/") {
+      route.push("/");
+      onLoginClick();
+    } else {
+      onLoginClick();
+    }
+  };
+  // ログインモーダルを開く
+
   return (
     <>
-      <header className="w-full h-[70px] flex items-center justify-center bg-white shadow-md relative z-10">
+      <header className="w-full h-[70px] flex items-center justify-center bg-white shadow-md  z-10 fixed">
         <div className="flex w-10/12 items-center justify-between h-full mx-9">
           <Button
             className="text-cyan-400 font-sans text-lg font-bold"
@@ -113,7 +124,7 @@ export default function Header({ onLoginClick }: Props) {
           ) : (
             <Button
               className={"text-cyan-400 font-sans text-lg font-bold"}
-              onClick={onLoginClick}
+              onClick={handleLoginClick}
             >
               ログイン / 新規登録
             </Button>

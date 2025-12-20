@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_30_111110) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_12_225510) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -30,8 +30,28 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_30_111110) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "edited_at"
     t.index ["room_id"], name: "index_messages_on_room_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.integer "reporter_id"
+    t.integer "reported_id"
+    t.integer "room_id"
+    t.integer "message_id"
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "room_bans", force: :cascade do |t|
+    t.bigint "room_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["room_id"], name: "index_room_bans_on_room_id"
+    t.index ["user_id"], name: "index_room_bans_on_user_id"
   end
 
   create_table "rooms", force: :cascade do |t|
@@ -54,5 +74,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_30_111110) do
   add_foreign_key "identities", "users"
   add_foreign_key "messages", "rooms"
   add_foreign_key "messages", "users"
+  add_foreign_key "room_bans", "rooms"
+  add_foreign_key "room_bans", "users"
   add_foreign_key "rooms", "users"
 end

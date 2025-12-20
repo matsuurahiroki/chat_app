@@ -38,7 +38,7 @@ export default function LoginModal({ opened, onClose }: Props) {
     if (res?.error) {
       setMsg(res.error);
     } else {
-      setMsg("ログイン成功");
+      setMsg("");
       onClose();
     }
 
@@ -207,7 +207,7 @@ export default function LoginModal({ opened, onClose }: Props) {
               </Tabs.Panel>
             </Tabs>
 
-            {msg && <p>{msg}</p>}
+            {msg && <p className="mt-2 font-semibold text-red-500 whitespace-pre-line">{msg}</p>}
           </Stack>
         </Modal.Body>
       </Modal.Content>

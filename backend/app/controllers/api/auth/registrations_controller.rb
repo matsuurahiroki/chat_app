@@ -19,7 +19,9 @@ module Api
             name: user.name
           }, status: :ok
         else
-          render json: { error: user.errors.full_messages }, status: :unprocessable_entity
+          render json: {
+            errors: user.errors.full_messages
+          }, status: :unprocessable_entity
         end
       end
     end

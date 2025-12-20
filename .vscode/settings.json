@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+
+{
+  "solargraph.useBundler": true,
+  "solargraph.commandPath": '$/Users/hiro/Desktop/webapp/chatapp/backend/bin/solargraph',
+  "solargraph.transport": 'stdio'
+}
