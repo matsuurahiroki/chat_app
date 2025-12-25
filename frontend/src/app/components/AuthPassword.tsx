@@ -40,14 +40,14 @@ export function AuthPassword() {
         <div>
           <label
             htmlFor="current-password"
-            className="block text-sm font-semibold text-cyan-400 mb-1"
+            className="block sm:text-sm text-xs font-semibold text-cyan-400 mb-1"
           >
             現在のパスワード
           </label>
           <input
             id="current-password"
             type="password"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 sm:text-sm text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
           />
@@ -57,14 +57,14 @@ export function AuthPassword() {
         <div>
           <label
             htmlFor="new-password"
-            className="block text-sm font-semibold text-cyan-400 mb-1"
+            className="block sm:text-sm text-xs font-semibold text-cyan-400 mb-1"
           >
             新しいパスワード
           </label>
           <input
             id="new-password"
             type="password"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 sm:text-sm text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -74,7 +74,7 @@ export function AuthPassword() {
         <div>
           <label
             htmlFor="new-password-confirm"
-            className="block text-sm font-semibold text-cyan-400 mb-1"
+            className="block sm:text-sm text-xs font-semibold text-cyan-400 mb-1"
           >
             新しいパスワード（確認）
           </label>
@@ -92,14 +92,10 @@ export function AuthPassword() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full md:w-48 rounded-lg bg-cyan-400 text-white text-sm font-semibold py-2 hover:bg-cyan-600 disabled:opacity-60"
+            className="w-full md:w-48 rounded-lg bg-cyan-400 text-white text-sm sm:text-base font-semibold py-2 hover:bg-cyan-600 disabled:opacity-60"
           >
-            {busy ? "変更中..." : "パスワードを変更（ダミー）"}
+            {busy ? "変更中..." : "パスワードを変更"}
           </button>
-          <p className="mt-2 text-xs text-slate-400">
-            実際のパスワード変更処理は、後で Rails / BFF API
-            を実装してから有効にします。
-          </p>
         </div>
       </form>
     </div>

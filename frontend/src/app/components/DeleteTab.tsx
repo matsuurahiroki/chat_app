@@ -32,7 +32,7 @@ const LogoutTab = () => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
       <div className="mt-2">
-        <p className="text-slate-700">
+        <p className="text-slate-700 text-sm sm:text-base">
           ログアウトすると、再度ログインが必要になります。
         </p>
 
@@ -43,7 +43,7 @@ const LogoutTab = () => {
             type="submit"
             disabled={busy}
             className={
-              "w-full md:w-40 rounded-lg text-white text-sm font-semibold py-2 " +
+              "w-full md:w-40 rounded-lg text-white text-sm sm:text-base font-semibold py-2 " +
               (busy ? "bg-slate-300" : "bg-red-500 hover:bg-red-600")
             }
           >

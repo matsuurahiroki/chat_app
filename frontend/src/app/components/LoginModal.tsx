@@ -46,39 +46,38 @@ export default function LoginModal({ opened, onClose }: Props) {
   };
 
   const signupEmail = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setBusy(true);
-  setMsg(null);
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
 
-  const res = await signIn("credentials", {
-    email: emailS,
-    password: passS,
-    name: nameS,
-    mode: "register",
-    redirect: false,
-  });
+    const res = await signIn("credentials", {
+      email: emailS,
+      password: passS,
+      name: nameS,
+      mode: "register",
+      redirect: false,
+    });
 
-  if (res?.error) {
-    if (res.error === "CredentialsSignin") {
-      setMsg("メールまたはパスワードが正しくありません。");
+    if (res?.error) {
+      if (res.error === "CredentialsSignin") {
+        setMsg("メールまたはパスワードが正しくありません。");
+      } else {
+        setMsg(res.error);
+      }
     } else {
-      setMsg(res.error);
+      setMsg("登録成功。ログインしてください。");
     }
-  } else {
-    setMsg("登録成功。ログインしてください。");
-  }
 
-  setBusy(false);
-};
-
+    setBusy(false);
+  };
 
   return (
     <Modal.Root opened={opened} onClose={onClose} centered>
       <Modal.Overlay className="bg-black/10" />
 
-      <Modal.Content className=" !rounded-2xl text-cyan-400 p-6">
+      <Modal.Content className=" !rounded-2xl text-cyan-400 md:!p-6 sm:!p-4">
         <Modal.Header className="bg-white text-cyan-400">
-          <Modal.Title className=" text-cyan-400 !font-semibold text-xl">
+          <Modal.Title className=" text-cyan-400 !font-semibold  !text-sm sm:!text-base shrink-0 whitespace-nowrap">
             ログイン / 新規登録
           </Modal.Title>
           <Modal.CloseButton className="!bg-transparent !hover:bg-transparent !text-cyan-400" />
@@ -86,36 +85,36 @@ export default function LoginModal({ opened, onClose }: Props) {
 
         <Modal.Body>
           <Stack>
-            <Group grow>
+            <Group className="!w-full !flex !flex-grow-1 gap-2 sm:[&>*]:!flex-1 [&>*]:!w-full !flex-col sm:!flex-row">
               <Button
-                className="!bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
+                className=" !bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold sm:!text-sm !text-xs shrink-0 whitespace-nowrap"
                 onClick={() => signIn("google", { callbackUrl: "/" })}
               >
                 Googleでログイン
               </Button>
 
               <Button
-                className="!bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
+                className="!bg-cyan-400 text-white !hover:text-gray-200 !hover:bg-cyan-600 !font-semibold sm:!text-sm !text-xs shrink-0 whitespace-nowrap"
                 onClick={() => signIn("twitter", { callbackUrl: "/" })}
               >
                 Xでログイン
               </Button>
             </Group>
 
-            <Divider className="!font-semibold" label="または" />
+            <Divider className=" pt-2 !font-semibold sm:!text-sm !text-xs" label="または" />
 
             <Tabs defaultValue="login" variant="unstyled">
-              <Tabs.List className="p-1 flex border-b border-gray-200">
+              <Tabs.List className="p-1 !flex !flex-col sm:!flex-row border-b border-gray-200">
                 <Tabs.Tab
                   value="login"
-                  className="flex-1 bg-white text-cyan-400 font-semibold py-2 !border-0 hover:bg-gray-200 hover:text-cyan-600 hover:!border-b-2 hover:!border-gray-300 data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500"
+                  className="flex-1 bg-white text-cyan-400 font-semibold py-2 !border-0 hover:bg-gray-200 hover:text-cyan-600 hover:!border-b-2 hover:!border-gray-300 data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500 sm:!text-sm !text-xs"
                 >
                   メールでログイン
                 </Tabs.Tab>
 
                 <Tabs.Tab
                   value="signup"
-                  className="flex-1 bg-white text-cyan-400 font-semibold py-2 !border-0 hover:bg-gray-200 hover:text-cyan-600 hover:!border-b-2 hover:!border-gray-300 data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500"
+                  className="flex-1 bg-white text-cyan-400 font-semibold py-2 !border-0 hover:bg-gray-200 hover:text-cyan-600 hover:!border-b-2 hover:!border-gray-300 data-[active=true]:!border-b-2 data-[active=true]:!border-cyan-500 sm:!text-sm !text-xs"
                 >
                   新規登録
                 </Tabs.Tab>
@@ -132,7 +131,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       type="email"
                       classNames={{
                         input: "border-none !bg-gray-200 text-black",
-                        label: "font-semibold",
+                        label: "font-semibold sm:!text-sm !text-xs",
                       }}
                     />
 
@@ -142,15 +141,16 @@ export default function LoginModal({ opened, onClose }: Props) {
                       onChange={(e) => setPassL(e.currentTarget.value)}
                       required
                       classNames={{
-                        input: "!border-none !bg-gray-200 text-black focus:ring-cyan-400 focus:border-cyan-400",
-                        label: "font-semibold",
+                        input:
+                          "!border-none !bg-gray-200 text-black focus:ring-cyan-400 focus:border-cyan-400",
+                        label: "font-semibold sm:!text-sm !text-xs",
                       }}
                     />
 
                     <Button
                       type="submit"
                       loading={busy}
-                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
+                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold sm:!text-sm !text-xs"
                     >
                       ログイン
                     </Button>
@@ -168,7 +168,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       required
                       classNames={{
                         input: "border-none !bg-gray-200 text-black",
-                        label: "font-semibold",
+                        label: "font-semibold sm:!text-sm !text-xs",
                       }}
                     />
 
@@ -180,7 +180,7 @@ export default function LoginModal({ opened, onClose }: Props) {
                       type="email"
                       classNames={{
                         input: "border-none !bg-gray-200 text-black",
-                        label: "font-semibold",
+                        label: "font-semibold sm:!text-sm !text-xs",
                       }}
                     />
 
@@ -191,14 +191,14 @@ export default function LoginModal({ opened, onClose }: Props) {
                       required
                       classNames={{
                         input: "border-none !bg-gray-200 text-black",
-                        label: "font-semibold",
+                        label: "font-semibold sm:!text-sm !text-xs",
                       }}
                     />
 
                     <Button
                       type="submit"
                       loading={busy}
-                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold"
+                      className="!bg-cyan-400 text-white hover:text-gray-200 !hover:bg-cyan-600 !font-semibold sm:!text-sm !text-xs"
                     >
                       登録
                     </Button>
@@ -207,7 +207,11 @@ export default function LoginModal({ opened, onClose }: Props) {
               </Tabs.Panel>
             </Tabs>
 
-            {msg && <p className="mt-2 font-semibold text-red-500 whitespace-pre-line">{msg}</p>}
+            {msg && (
+              <p className="mt-2 font-semibold text-red-500 whitespace-pre-line">
+                {msg}
+              </p>
+            )}
           </Stack>
         </Modal.Body>
       </Modal.Content>

@@ -2,7 +2,7 @@
 import RoomChat from "../../components/RoomChat";
 import { notFound } from "next/navigation";
 
-// ★ Next 15 では params は Promise になりうるのでこう定義する
+// Next15以降ではparamsをPromise(awaitにしないといけない模様)
 type Props = {
   params: Promise<{
     roomId: string; // URLパラメータは文字列で渡ってくる
@@ -34,7 +34,7 @@ const fetchRoom = async (roomId: string): Promise<Room | null> => {
 };
 
 const RoomPage = async ({ params }: Props) => {
-  // paramsをawait してから id を取り出す（これを外すとエラー）
+  // ここでparamsをawaitしてからidを取り出す
   const { roomId } = await params;
 
   // URL から来た id を使って BFF 経由でルーム情報を1件取得
@@ -46,7 +46,7 @@ const RoomPage = async ({ params }: Props) => {
 
   return (
     <main className="min-h-screen bg-slate-300 flex mx-auto justify-center m-full">
-      <div className="w-10/12 max-w-full flex flex-col border-x border-slate-800 bg-white mb-10" suppressHydrationWarning >
+      <div className="lg:w-11/12 w-full max-w-full flex flex-col border-x border-slate-800 bg-white" suppressHydrationWarning >
         <RoomChat roomId={room.id} roomTitle={room.title} roomTime={room.created_at_text} userName={room.user.name}/>
       </div>
     </main>
@@ -55,5 +55,5 @@ const RoomPage = async ({ params }: Props) => {
 
 export default RoomPage;
 
-// <Link key={room.id} href={`/rooms/${room.id}`}> で設定した URL の [roomId] 部分が
+// <Link key={room.id} href={`/rooms/${room.id}`}> で設定した URL の [id] 部分が
 // Next.js によって props.params に入り、ここで await してから使っている

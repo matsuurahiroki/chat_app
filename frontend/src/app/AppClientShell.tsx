@@ -25,7 +25,7 @@ export default function AppClientShell({
       {status !== "authenticated" && (
         <LoginModal opened={open} onClose={() => setOpen(false)} />
       )}
-      <div style={{ paddingTop: 70 }}>{children}</div>
+      <div className="md:pt-[70px] pt-[50px]">{children}</div>
     </>
   );
 }

@@ -16,17 +16,17 @@ export function SettingTabs({ initialName, initialEmail, userId }: Props) {
   const [tab, setTab] = useState<"profile" | "auth" | "delete">("profile");
 
   return (
-    <main className="min-h-screen bg-slate-50 flex">
+    <main className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       {/* 左サイドメニュー */}
-      <aside className="hidden md:block w-64 bg-white shadow-sm border-r border-slate-100">
+      <aside className="md:w-64 rounded-2xl md:rounded-none m-4 md:m-0 bg-white shadow-sm border-r border-slate-100">
         <div className="px-6 py-6">
           <h2 className="text-sm font-semibold text-slate-500 mb-4">設定</h2>
-          <nav className="space-y-1 text-sm">
+          <nav className="space-y-1">
             <button
               type="button"
               onClick={() => setTab("profile")}
               className={
-                "w-full text-left rounded-lg px-3 py-2 " +
+                "w-full text-left rounded-lg px-3 py-2 text-sm sm:text-base "  +
                 (tab === "profile"
                   ? "bg-cyan-50 text-cyan-400 font-semibold"
                   : "text-slate-600 hover:bg-slate-50")
@@ -39,7 +39,7 @@ export function SettingTabs({ initialName, initialEmail, userId }: Props) {
               type="button"
               onClick={() => setTab("auth")}
               className={
-                "w-full text-left rounded-lg px-3 py-2 " +
+                "w-full text-left rounded-lg px-3 py-2 text-sm sm:text-base " +
                 (tab === "auth"
                   ? "bg-cyan-50 text-cyan-400 font-semibold"
                   : "text-slate-600 hover:bg-slate-50")
@@ -52,7 +52,7 @@ export function SettingTabs({ initialName, initialEmail, userId }: Props) {
               type="button"
               onClick={() => setTab("delete")}
               className={
-                "w-full text-left rounded-lg px-3 py-2 " +
+                "w-full text-left rounded-lg px-3 py-2 text-sm sm:text-base" +
                 (tab === "delete"
                   ? "bg-cyan-50 text-cyan-400 font-semibold"
                   : "text-slate-600 hover:bg-slate-50")
@@ -67,7 +67,7 @@ export function SettingTabs({ initialName, initialEmail, userId }: Props) {
       {/* 右側メインコンテンツ */}
       <section className="flex-1 flex justify-center px-4 py-10">
         <div className="w-full max-w-3xl">
-          <h1 className="text-2xl font-bold text-cyan-400 mb-6">
+          <h1 className="font-bold text-cyan-400 mb-6 text-lg sm:text-2xl">
             {tab === "profile" ? "プロフィール" : tab === "auth" ? "認証とパスワード" : "ログアウトとアカウント削除"}
           </h1>
 

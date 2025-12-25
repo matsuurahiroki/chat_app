@@ -1,4 +1,4 @@
-// src/app/api/bff/messages/[messageId]/route.ts
+// src/app/api/bff/messages/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/nextauth/auth";
@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/nextauth/auth";
 const api = process.env.BACKEND_API_URL!;
 const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 
-export async function PATCH(req: Request, context: { params: { meesageId: string } }) {
+export async function PATCH(req: Request, context: { params: { messageId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -16,7 +16,7 @@ export async function PATCH(req: Request, context: { params: { meesageId: string
   const body = await req.json().catch(() => null);
   if (!body?.body) return NextResponse.json({ error: "missing_body" }, { status: 400 });
 
-  const railsRes = await fetch(`${api}/api/messages/${context.params.meesageId}`, {
+  const railsRes = await fetch(`${api}/api/messages/${context.params.messageId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

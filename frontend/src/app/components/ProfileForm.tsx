@@ -60,7 +60,7 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
     >
       {/* アイコン＋ユーザーID */}
       <div className="flex flex-col ">
-        <p className="font-semibold text-cyan-400">
+        <p className="font-semibold text-cyan-400  text-base sm:text-lg">
           ユーザーID{" "}
           <span className=" font-mono font-normal text-slate-800">
             {userId}
@@ -74,7 +74,7 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-semibold text-cyan-400  mb-1"
+            className="block text-sm sm:text-base font-semibold text-cyan-400  mb-1"
           >
             ユーザー名
           </label>
@@ -92,7 +92,7 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-semibold text-cyan-400 mb-1"
+            className="block text-sm sm:text-base font-semibold text-cyan-400 mb-1"
           >
             メールアドレス
           </label>
@@ -110,7 +110,7 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
         <div className="pt-4">
           <button
             type="submit"
-            className="w-full md:w-40 rounded-lg bg-cyan-400 text-white text-sm font-semibold py-2 hover:bg-cyan-600"
+            className="w-full md:w-40 rounded-lg bg-cyan-400 text-white text-sm sm:text-base font-semibold py-2 hover:bg-cyan-600"
             disabled={busy}
           >
             {busy ? "更新中..." : "更新"}

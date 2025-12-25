@@ -56,15 +56,23 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
           href={`/rooms/${room.id}`}
           onClick={handleRoomClick()}
         >
-          <div className="rounded-2xl bg-white shadow-sm border border-slate-300 p-4 mb-3 hover:bg-slate-50 cursor-pointer">
-            <h2 className="text-base font-semibold text-cyan-400">
+          <div className="rounded-2xl bg-white shadow-sm border border-slate-300 p-2 sm:p-4 mb-3 hover:bg-slate-50 cursor-pointer">
+            <h2 className="text-[10px] line-clamp-3 sm:text-sm md:text-base font-semibold text-cyan-400">
               {room.title}
             </h2>
             <div className="flex items-center">
-              <p className="font-normal text-cyan-400 pr-2">作成者:</p>
-              <p className="font-normal">{room.user.name}</p>
-              <p className="font-normal pl-4 text-cyan-400 pr-2">日にち: </p>
-              <p>{new Date(room.created_at).toLocaleString()}</p>
+              <p className="font-normal text-cyan-400 sm:pr-2 pr-1 text-[10px] sm:text-sm md:text-base truncate whitespace-nowrap">
+                作成者:
+              </p>
+              <p className="font-normal text-[10px] sm:text-sm md:text-base truncate whitespace-nowrap">
+                {room.user.name}
+              </p>
+              <p className="font-normal sm:pl-4 pl-2 text-cyan-400 sm:pr-2 pr-1 text-[10px] sm:text-sm md:text-base truncate whitespace-nowrap">
+                日にち:{" "}
+              </p>
+              <p className="text-[10px] sm:text-sm md:text-base truncate whitespace-nowrap">
+                {new Date(room.created_at).toLocaleString()}
+              </p>
             </div>
           </div>
         </Link>

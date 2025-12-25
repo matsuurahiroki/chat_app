@@ -1,8 +1,7 @@
-// /src/app/rooms/[id]/RoomChat.tsx
+// app/components/RoomChat.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 type Message = {
@@ -12,6 +11,8 @@ type Message = {
   isMe: boolean;
   createdAt: string;
 };
+
+// Messageらのプロパティの要素名はRails側のJSONに合わせている(今回の場合はカラム名から抽出)
 
 type RoomChatProps = {
   roomId: number;
@@ -23,7 +24,6 @@ type RoomChatProps = {
 const initialMessages: Message[] = [];
 
 const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
   const { data: session } = useSession();
@@ -45,7 +45,7 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
   const jumpToBottom = useCallback(() => {
     const el = listRef.current;
     if (!el) return;
-    // 投稿時移動（瞬間移動）
+    // 投稿時移動
     el.scrollTop = el.scrollHeight;
   }, []);
 
@@ -95,7 +95,6 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
   }, [messages.length, jumpToBottom]);
 
   useEffect(() => {
-    // bodyだけだと効かない環境があるので html も付けるのが安全
     document.body.classList.add("no-page-scroll");
     document.documentElement.classList.add("no-page-scroll");
 
@@ -147,26 +146,26 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden">
       {/* 上部ヘッダー */}
-      <header className="h-12 px-3 flex justify-between items-center border-b-2  shadow-sm bg-white ">
-        <button
-          className="text-cyan-400 text-sm font-semibold mr-3 justify-end"
-          onClick={() => router.push("/")}
-        >
-          〈 戻る
-        </button>
-        <div className="flex items-center gap-4 text-sm font-semibold text-cyan-400">
-          <p>
-            ルーム名:{" "}
-            <span className="text-slate-800 font-normal">{roomTitle}</span>
-          </p>
-          <p>
+      <header className="h-12 px-3 flex justify-end items-center border-b-2  shadow-sm bg-white ">
+        <div className="flex justify-end min-w-0 items-center gap-4 text-sm font-semibold text-cyan-400">
+          <div className="flex min-w-0 items-center gap-1 max-w-[50%]">
+            <span className="shrink-0 sm:text-sm text-xs">ルーム名:</span>
+            <span
+              className="min-w-0 truncate inline-block text-slate-800 font-normal sm:text-sm text-xs"
+            >
+              {roomTitle}
+            </span>
+          </div>
+          <div className="shrink-0 whitespace-nowrap sm:text-sm text-xs">
             ルームID:{" "}
-            <span className="text-slate-800 font-normal">{roomId}</span>
-          </p>
-          <p>
+            <span className="text-slate-800 font-normal sm:text-sm text-xs">{roomId}</span>
+          </div>
+
+          {/* 作成者：縮まない（位置固定） */}
+          <div className="shrink-0 whitespace-nowrap md:text-base sm:text-sm text-xs">
             作成者:{" "}
-            <span className="text-slate-800 font-normal">{userName}</span>
-          </p>
+            <span className="text-slate-800 font-normal md:text-base sm:text-sm text-xs">{userName}</span>
+          </div>
         </div>
       </header>
 
@@ -183,21 +182,21 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
             }`}
           >
             <p
-              className={`text-[12px] mt-2 pb-0.5 ${
+              className={`text-[9px] sm:text-sm mt-2 pb-0.5 ${
                 m.isMe ? "text-cyan-400" : "text-slate-400"
               }`}
             >
               {m.createdAt}
             </p>
             <div
-              className={`max-w-[80%] w-fit rounded-2xl px-3 py-2 text-sm shadow-sm bg-cyan-400 ${
+              className={`max-w-[80%] w-fit rounded-2xl px-3 py-2 text-xm shadow-sm bg-cyan-400 ${
                 m.isMe ? "text-white rounded-bl-sm" : "text-white rounded-br-sm"
               }`}
             >
               {!m.isMe && (
-                <p className="text-[12px] text-cyan-400 mb-0.5">{m.userName}</p>
+                <p className="md:text-base sm:text-sm text-xs text-cyan-400 mb-0.5">{m.userName}</p>
               )}
-              <p className="whitespace-pre-wrap break-words">{m.body}</p>
+              <p className="whitespace-pre-wrap break-words md:text-base sm:text-sm text-xs">{m.body}</p>
             </div>
           </div>
         ))}
@@ -212,7 +211,7 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
       {/* 下部入力フォーム*/}
       <form
         onSubmit={handleSubmit}
-        className="fixed bottom-0 w-10/12 left-1/2 -translate-x-1/2 h-14 px-3 flex items-center gap-2 border-t border-slate-200 bg-white z-20"
+        className="fixed bottom-0 lg:w-11/12 w-full left-1/2 -translate-x-1/2 h-14 px-3 flex items-center gap-2 border-t border-slate-200 bg-white z-20"
       >
         <input
           suppressHydrationWarning

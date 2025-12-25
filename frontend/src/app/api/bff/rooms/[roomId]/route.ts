@@ -1,4 +1,4 @@
-// /src/app/api/bff/rooms/[roomId]/route.ts
+// /src/app/api/bff/rooms/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/nextauth/auth";
@@ -9,7 +9,7 @@ const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 // ルーム一覧取得（ホーム画面用）
 export async function GET(_req: Request, context: { params: { roomId: string } }) {
 
-  const { roomId } = await context.params;
+  const { roomId } = context.params;
   const railsRes = await fetch(`${api}/api/rooms/${roomId}`, {
     headers: {
       "X-BFF-Token": BFF_SHARED_TOKEN,
