@@ -7,9 +7,11 @@ const api = process.env.BACKEND_API_URL!;
 const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 
 // ルーム一覧取得（ホーム画面用）
-export async function GET(_req: Request, context: { params: { roomId: string } }) {
-
-  const { roomId } = context.params;
+export async function GET(
+  _req: Request,
+  context: { params: { roomId: string } }
+) {
+  const { roomId } = await context.params;
   const railsRes = await fetch(`${api}/api/rooms/${roomId}`, {
     headers: {
       "X-BFF-Token": BFF_SHARED_TOKEN,
@@ -76,4 +78,41 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(json, { status: 201 });
+}
+
+export async function DELETE(
+  _req: Request,
+  context: { params: { roomId: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  const userId = (session).userId;
+  if (!userId)
+    return NextResponse.json({ error: "no_user_id" }, { status: 400 });
+
+  const { roomId } = await context.params;
+
+  const railsRes = await fetch(`${api}/api/rooms/${roomId}`, {
+    method: "DELETE",
+    headers: {
+      "X-BFF-Token": BFF_SHARED_TOKEN,
+      "X-User-Id": String(userId),
+    },
+    cache: "no-store",
+  });
+
+  const json = await railsRes.json().catch(() => null);
+
+  if (!railsRes.ok) {
+    return NextResponse.json(json ?? { error: "rails_error" }, {
+      status: railsRes.status,
+    });
+  }
+
+// ここでいるparamsはアクセスしたroom、そのidを取得している
+// Railsのrequest.headers['X-User-Id']はTSのX-User-Idのこと
+
+  return NextResponse.json(json ?? { ok: true }, { status: 200 });
 }

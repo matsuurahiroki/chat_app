@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   Modal,
@@ -21,7 +22,20 @@ export default function LoginModal({ opened, onClose }: Props) {
   const [passS, setPassS] = useState("");
   const [nameS, setNameS] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{
+    type: "error" | "success";
+    text: string;
+  } | null>(null);
+
+  const humanize = (code: string) => {
+    if (code === "email_not_confirmed")
+      return "メール確認が必要です。確認メールのリンクを開いてください。";
+    if (code === "invalid_credentials" || code === "CredentialsSignin")
+      return "メールまたはパスワードが正しくありません。";
+    if (code === "REGISTER_OK")
+      return "確認メールを送信しました。メール内リンクを開いてからログインしてください。";
+    return code;
+  };
 
   const loginEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,9 +50,9 @@ export default function LoginModal({ opened, onClose }: Props) {
     });
 
     if (res?.error) {
-      setMsg(res.error);
+      setMsg({ type: "error", text: humanize(res.error) });
     } else {
-      setMsg("");
+      setMsg(null);
       onClose();
     }
 
@@ -58,14 +72,24 @@ export default function LoginModal({ opened, onClose }: Props) {
       redirect: false,
     });
 
+    if (res?.error === "REGISTER_OK") {
+      setMsg({ type: "success", text: humanize("REGISTER_OK") });
+
+      // ログインタブへ戻す（ついでにログイン欄へメールをコピー）
+      setEmailL(emailS);
+      setPassL("");
+      setBusy(false);
+      return;
+    }
+
     if (res?.error) {
-      if (res.error === "CredentialsSignin") {
-        setMsg("メールまたはパスワードが正しくありません。");
-      } else {
-        setMsg(res.error);
-      }
+      setMsg({ type: "error", text: humanize(res.error) });
     } else {
-      setMsg("登録成功。ログインしてください。");
+      // 万一ここに来た場合も成功表示
+      setMsg({
+        type: "success",
+        text: "登録しました。確認メールを開いてからログインしてください。",
+      });
     }
 
     setBusy(false);
@@ -101,7 +125,10 @@ export default function LoginModal({ opened, onClose }: Props) {
               </Button>
             </Group>
 
-            <Divider className=" pt-2 !font-semibold sm:!text-sm !text-xs" label="または" />
+            <Divider
+              className=" pt-2 !font-semibold sm:!text-sm !text-xs"
+              label="または"
+            />
 
             <Tabs defaultValue="login" variant="unstyled">
               <Tabs.List className="p-1 !flex !flex-col sm:!flex-row border-b border-gray-200">
@@ -209,7 +236,7 @@ export default function LoginModal({ opened, onClose }: Props) {
 
             {msg && (
               <p className="mt-2 font-semibold text-red-500 whitespace-pre-line">
-                {msg}
+                {msg.text}
               </p>
             )}
           </Stack>

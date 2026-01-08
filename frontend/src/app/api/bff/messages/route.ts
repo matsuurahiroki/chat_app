@@ -30,10 +30,9 @@ export async function GET(req: Request) {
   const json = await railsRes.json().catch(() => null);
 
   if (!railsRes.ok) {
-    return NextResponse.json(
-      json ?? { error: "rails_error" },
-      { status: railsRes.status }
-    );
+    return NextResponse.json(json ?? { error: "rails_error" }, {
+      status: railsRes.status,
+    });
   }
 
   return NextResponse.json(json, { status: 200 });

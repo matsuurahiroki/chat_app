@@ -33,3 +33,5 @@ group :development, :test do
   gem 'rubocop', require: false
   gem 'solargraph', require: false
 end
+
+gem 'letter_opener_web', '~> 3.0', group: :development

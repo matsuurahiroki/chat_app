@@ -3,7 +3,7 @@
 # app/models/user.rb
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
-         :rememberable, :validatable
+         :rememberable, :validatable, :confirmable
   has_many :identities, dependent: :destroy # Outh関連のデータ
   has_many :rooms, dependent: :destroy # 作成したルーム
   has_many :messages, dependent: :destroy # 送信したメッセージ

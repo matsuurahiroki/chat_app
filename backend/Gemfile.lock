@@ -77,6 +77,8 @@ GEM
       minitest (>= 5.1)
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
+    addressable (2.8.8)
+      public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
     backport (1.2.0)
     base64 (0.3.0)
@@ -88,6 +90,8 @@ GEM
     builder (3.3.0)
     case_transform (0.2)
       activesupport
+    childprocess (5.1.0)
+      logger (~> 1.5)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
     crass (1.0.6)
@@ -152,6 +156,17 @@ GEM
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
     language_server-protocol (3.17.0.5)
+    launchy (3.1.1)
+      addressable (~> 2.8)
+      childprocess (~> 5.0)
+      logger (~> 1.6)
+    letter_opener (1.10.0)
+      launchy (>= 2.2, < 4)
+    letter_opener_web (3.0.0)
+      actionmailer (>= 6.1)
+      letter_opener (~> 1.9)
+      railties (>= 6.1)
+      rexml
     lint_roller (1.1.0)
     logger (1.7.0)
     loofah (2.24.1)
@@ -234,6 +249,7 @@ GEM
     psych (5.2.6)
       date
       stringio
+    public_suffix (7.0.0)
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -393,6 +409,7 @@ DEPENDENCIES
   devise_token_auth
   dotenv-rails
   jbuilder
+  letter_opener_web (~> 3.0)
   omniauth
   omniauth-facebook
   omniauth-google-oauth2

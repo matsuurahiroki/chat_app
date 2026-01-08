@@ -53,6 +53,25 @@ module Api
       )
     end
 
+    def destroy
+      room = Room.find(params[:id])
+
+      # :シンボル名はハッシュのキーのようなもの
+      # キーワード引数:はあらかじめ決まった名前の引数を渡すもの
+      # Room.find(params[:id])とRoom.find_by(id: params[:id])の違いは例外時の挙動、前者はその時点で例外が発生、後者はnilを返す
+
+      requester_id = request.headers['X-User-Id'].to_i
+      return render json: { error: 'missing_user_id' }, status: :unauthorized if requester_id <= 0 || requester_id.nil?
+
+      if room.user_id != requester_id
+        render json: { error: 'forbidden' }, status: :forbidden
+        return
+      end
+
+      room.destroy
+      render json: { ok: true }, status: :ok
+    end
+
     private
 
     def verify_bff_token!

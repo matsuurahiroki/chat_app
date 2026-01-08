@@ -1,0 +1,9 @@
+<p><%= @resource.email %> さん</p>
+
+<p>以下のリンクを開いてメールアドレスを確認してください。</p>
+
+<p>
+  <a href="<%= "#{ENV.fetch("FRONTEND_URL")}/verify?token=#{@token}" %>">
+    メールを確認する
+  </a>
+</p>

@@ -1,8 +1,9 @@
 // app/components/RoomChat.tsx
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type Message = {
   id: number;
@@ -10,6 +11,7 @@ type Message = {
   body: string;
   isMe: boolean;
   createdAt: string;
+  editedAt?: string | null;
 };
 
 // Messageらのプロパティの要素名はRails側のJSONに合わせている(今回の場合はカラム名から抽出)
@@ -21,16 +23,86 @@ type RoomChatProps = {
   userName: string;
 };
 
+type MenuState = { messageId: number; x: number; y: number } | null;
+
+const fmt = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
+
+const formatJst = (iso: string) => fmt.format(new Date(iso));
+
 const initialMessages: Message[] = [];
 
 const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
+  const { data: session, status } = useSession();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
-  const { data: session } = useSession();
-
+  const [busy, setBusy] = useState(false);
+  const router = useRouter();
   const listRef = useRef<HTMLDivElement | null>(null);
-
+  const [editingId, setEditingId] = useState<number | null>(null);
   const shouldJumpRef = useRef(true);
+  const [menu, setMenu] = useState<MenuState>(null);
+  const selectedMessage = menu
+    ? messages.find((mm) => mm.id === menu.messageId)
+    : null;
+  const closeMenu = () => setMenu(null);
+  const startEdit = (m: Message) => {
+    setEditingId(m.id);
+    setText(m.body); // 下の入力欄に本文を入れて編集させる
+  };
+  const openMenu = (e: React.MouseEvent, m: Message) => {
+    if (!m.isMe) return;
+
+    const sel = window.getSelection();
+    if (sel && sel.toString().trim().length > 0) return;
+
+    // 同じメッセージを再クリックで閉じる
+    if (menu?.messageId === m.id) {
+      setMenu(null);
+      return;
+    }
+
+    const margin = 8;
+    const x0 = e.clientX;
+    const y0 = e.clientY - margin;
+
+    const x = Math.max(margin, Math.min(x0, window.innerWidth - margin));
+    const y = Math.max(margin, Math.min(y0, window.innerHeight - margin));
+
+    setMenu({ messageId: m.id, x, y });
+  };
+
+  const deleteMessage = async (m: Message) => {
+    if (busy) return;
+
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/bff/messages/${m.id}?roomId=${roomId}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
+
+      // 204 No Content でも成功扱いにする
+      if (res.status === 204 || res.ok) {
+        setMessages((prev) => prev.filter((r) => r.id !== m.id));
+        alert("削除に成功しました");
+        router.refresh();
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      alert(data?.error ?? "削除に失敗しました");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
@@ -53,10 +125,21 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
     const res = await fetch(`/api/bff/messages?roomId=${roomId}`, {
       cache: "no-store",
     });
-    const data = await res.json().catch(() => null);
+    const text = await res.text().catch(() => "");
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
 
     if (!res.ok) {
-      console.error("load messages failed:", data);
+      const info = {
+        status: res.status,
+        contentType: res.headers.get("content-type"),
+        text: text.slice(0, 500),
+      };
+      console.error("load messages failed:\n" + JSON.stringify(info, null, 2));
       return;
     }
 
@@ -69,6 +152,7 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
           body: m.body,
           isMe: myId ? String(m.user_id) === String(myId) : false,
           createdAt: new Date(m.created_at).toLocaleString("ja-JP"),
+          editedAt: m.edited_at ?? null,
         }))
       : [];
 
@@ -77,8 +161,9 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
   }, [roomId, session?.userId]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     loadMessages();
-  }, [loadMessages]);
+  }, [status, loadMessages]);
 
   useEffect(() => {
     if (!shouldJumpRef.current) return;
@@ -111,6 +196,47 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
     if (!v) return;
 
     setText("");
+    if (editingId !== null) {
+      setBusy(true);
+      try {
+        const res = await fetch(
+          `/api/bff/messages/${editingId}?roomId=${roomId}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ body: v }),
+          }
+        );
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          if (data?.error === "edit_window_expired") {
+            alert("このメッセージは送信から1時間を超えたため編集できません。");
+          } else {
+            alert(data?.error ?? "編集に失敗しました");
+          }
+          return;
+        }
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === editingId
+              ? {
+                  ...m,
+                  body: data.body ?? v,
+                  editedAt: data.edited_at ?? new Date().toISOString(),
+                }
+              : m
+          )
+        );
+
+        setEditingId(null);
+        return;
+      } finally {
+        setBusy(false);
+      }
+    }
 
     const res = await fetch("/api/bff/messages", {
       method: "POST",
@@ -140,31 +266,37 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
     ]);
 
     sessionStorage.setItem("scrollToBottomAfterReload", "1");
-    window.location.reload();
+    await loadMessages();
+    shouldJumpRef.current = true;
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden">
+    <div
+      className="flex flex-col h-[100dvh] overflow-hidden"
+      suppressHydrationWarning
+    >
       {/* 上部ヘッダー */}
       <header className="h-12 px-3 flex justify-end items-center border-b-2  shadow-sm bg-white ">
         <div className="flex justify-end min-w-0 items-center gap-4 text-sm font-semibold text-cyan-400">
           <div className="flex min-w-0 items-center gap-1 max-w-[50%]">
             <span className="shrink-0 sm:text-sm text-xs">ルーム名:</span>
-            <span
-              className="min-w-0 truncate inline-block text-slate-800 font-normal sm:text-sm text-xs"
-            >
+            <span className="min-w-0 truncate inline-block text-slate-800 font-normal sm:text-sm text-xs">
               {roomTitle}
             </span>
           </div>
           <div className="shrink-0 whitespace-nowrap sm:text-sm text-xs">
             ルームID:{" "}
-            <span className="text-slate-800 font-normal sm:text-sm text-xs">{roomId}</span>
+            <span className="text-slate-800 font-normal sm:text-sm text-xs">
+              {roomId}
+            </span>
           </div>
 
           {/* 作成者：縮まない（位置固定） */}
           <div className="shrink-0 whitespace-nowrap md:text-base sm:text-sm text-xs">
             作成者:{" "}
-            <span className="text-slate-800 font-normal md:text-base sm:text-sm text-xs">{userName}</span>
+            <span className="text-slate-800 font-normal md:text-base sm:text-sm text-xs">
+              {userName}
+            </span>
           </div>
         </div>
       </header>
@@ -186,17 +318,30 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
                 m.isMe ? "text-cyan-400" : "text-slate-400"
               }`}
             >
-              {m.createdAt}
+              {formatJst(m.createdAt)}
+              {m.editedAt && (
+                <span className="ml-2 md:text-[11px] sm:text-
+              [9px] text-[7px] text-slate-500">
+                  (編集済)
+                </span>
+              )}
             </p>
             <div
               className={`max-w-[80%] w-fit rounded-2xl px-3 py-2 text-xm shadow-sm bg-cyan-400 ${
-                m.isMe ? "text-white rounded-bl-sm" : "text-white rounded-br-sm"
+                m.isMe
+                  ? "text-white rounded-bl-sm cursor-pointer"
+                  : "text-white rounded-br-sm"
               }`}
+              onClick={(e) => openMenu(e, m)}
             >
               {!m.isMe && (
-                <p className="md:text-base sm:text-sm text-xs text-cyan-400 mb-0.5">{m.userName}</p>
+                <p className="md:text-base sm:text-sm text-xs text-cyan-400 mb-0.5">
+                  {m.userName}
+                </p>
               )}
-              <p className="whitespace-pre-wrap break-words md:text-base sm:text-sm text-xs">{m.body}</p>
+              <p className="whitespace-pre-wrap break-words md:text-base sm:text-sm text-xs">
+                {m.body}
+              </p>
             </div>
           </div>
         ))}
@@ -229,6 +374,47 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
           送信
         </button>
       </form>
+      {menu && selectedMessage && (
+        <>
+          {/* メニュー外クリックで閉じる */}
+          <div className="fixed inset-0 z-40" onClick={closeMenu} />
+
+          {/* メニュー本体 */}
+          <div
+            className="fixed z-50 rounded-full border bg-white shadow px-3 py-1 text-sm"
+            style={{
+              left: menu.x,
+              top: menu.y,
+              transform: "translate(-50%, -100%)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="whitespace-nowrap hover:opacity-80"
+                onClick={() => {
+                  closeMenu();
+                  startEdit(selectedMessage);
+                }}
+              >
+                編集
+              </button>
+
+              <button
+                type="button"
+                className="whitespace-nowrap hover:opacity-80 text-red-600"
+                onClick={() => {
+                  closeMenu();
+                  deleteMessage(selectedMessage);
+                }}
+              >
+                削除
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

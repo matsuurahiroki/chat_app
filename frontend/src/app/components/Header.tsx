@@ -37,7 +37,6 @@ export default function Header({ onLoginClick }: Props) {
     setIsPostOpen(true);
   };
 
-  // ★ 投稿処理を async にする
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

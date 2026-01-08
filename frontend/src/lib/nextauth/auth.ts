@@ -86,21 +86,13 @@ export const authOptions: NextAuthOptions = {
       // - フロントから送られてきた email/password を使って
       // - BFF(API Route) 経由で Rails に問い合わせる
       async authorize(credentials): Promise<AppUser | null> {
-        // email / password が無ければ認証失敗
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
-        // mode によって叩くエンドポイントを切り替え
-        // - "register": 新規登録 → /api/bff/auth/signup
-        // - それ以外: ログイン → /api/bff/auth/login
-        const path =
-          credentials.mode === "register"
-            ? `${FRONT}/api/bff/auth/signup`
-            : `${FRONT}/api/bff/auth/login`;
+        const isRegister = credentials.mode === "register";
+        const path = isRegister
+          ? `${FRONT}/api/bff/auth/signup`
+          : `${FRONT}/api/bff/auth/login`;
 
-        // BFF にメール/パスワード/名前を渡す
-        // BFF → Rails の /api/auth/signup or /api/auth/login に中継
         const res = await fetch(path, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -111,94 +103,42 @@ export const authOptions: NextAuthOptions = {
           }),
         });
 
-        // テキストとして一度全部受け取る（JSON でない可能性も考慮）
         const text = await res.text();
 
-        // ------------------------------
-        // 認証失敗時のエラーメッセージ処理
-        // ------------------------------
+        // 失敗時（既存のままでOK）
         if (!res.ok) {
-          // フォールバックのメッセージ
           let msg = "認証に失敗しました";
-
           try {
             const data = JSON.parse(text);
-
-            // Rails 側が { errors: ["xxx", "yyy"] } の形式で返している場合
-            if (Array.isArray(data?.errors) && data.errors.length > 0) {
-              // 配列を改行区切りの1つの文字列にする
+            if (Array.isArray(data?.errors) && data.errors.length > 0)
               msg = data.errors.join("\n");
-            }
-            // Rails 側が { error: "..." } の形式で返している場合
-            else if (typeof data?.error === "string") {
-              msg = data.error;
-            }
+            else if (typeof data?.error === "string") msg = data.error;
           } catch {
-            // JSON でないレスポンスが来た場合のログ
             console.error("[AUTH] Unexpected error response (not JSON):", text);
             msg = "予期しないエラーが発生しました";
           }
-
-          // ここで Error を投げると
-          // signIn("credentials", ..., { redirect: false }) の res.error に msg が入る
           throw new Error(msg);
         }
 
-        // ------------------------------
-        // 認証成功時のレスポンス処理
-        // ------------------------------
+        // ★register成功：セッションを作らない（userを返さない）
+        if (isRegister) {
+          throw new Error("REGISTER_OK");
+          // ここで return user をしないのが重要
+        }
+
+        // login成功：ここだけ user を返す
         let data: RailsAuthResponse = {};
         try {
           data = JSON.parse(text) as RailsAuthResponse;
-        } catch (err) {
-          // ここに来るのは Rails が JSON を返さなかった時
-          console.warn(
-            "[AUTH][Credentials] Rails response is not JSON, raw text:",
-            text,
-            err
-          );
-        }
+        } catch {}
+        if (data.id == null) return null;
 
-        // Rails 側が users.id を返していない場合は認証失敗扱い
-        if (data.id == null) {
-          console.error(
-            "[AUTH][Credentials] Rails response has no id. Abort login.",
-            data
-          );
-          return null;
-        }
-
-        // id を文字列に正規化
         const id = String(data.id);
+        const email = data.email ?? credentials.email;
+        const name = data.name ?? credentials.name ?? null;
+        if (!email) return null;
 
-        // email は Rails 優先、無ければ credentials の email を使う
-        const email: string | undefined =
-          data.email ?? (credentials.email as string | undefined);
-
-        // name は Rails 優先、無ければ credentials の name、それも無ければ null
-        const name: string | null =
-          data.name ?? (credentials.name as string | undefined) ?? null;
-
-        if (!email) {
-          // 最終的に email が決まらない場合は異常として認証失敗扱い
-          console.error(
-            "[AUTH][Credentials] Missing email after normalize",
-            data
-          );
-          return null;
-        }
-
-        // NextAuth に返すユーザーオブジェクト
-        // - id: NextAuth 内部でのユーザー識別子
-        // - userId: アプリ側で使う Rails users.id（統一用）
-        const user: AppUser = {
-          id,
-          userId: id,
-          email,
-          name,
-        };
-
-        return user; // ここで返したユーザーが jwt コールバックに渡される
+        return { id, userId: id, email, name };
       },
     }),
   ],
