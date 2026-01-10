@@ -15,6 +15,8 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
   const [email, setEmail] = useState(initialEmail);
   const [busy, setBusy] = useState(false);
   const { update } = useSession();
+  const PLACEHOLDER_EMAIL_RE = /^oauth-[^@]+@example\.invalid$/i;
+  const needsEmailUpdate = PLACEHOLDER_EMAIL_RE.test(email.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +106,11 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
             onChange={(e) => setEmail(e.target.value)}
             suppressHydrationWarning
           />
+          {needsEmailUpdate && (
+            <p className="mt-2 text-xs text-red-500">
+              ※ 現在のメールアドレスは仮のものです。メールアドレスを変更してください。
+            </p>
+          )}
         </div>
 
         {/* 更新ボタン */}

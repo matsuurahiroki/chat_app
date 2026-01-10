@@ -46,7 +46,7 @@ const RoomPage = async ({ params }: Props) => {
 
   return (
     <main className="min-h-screen bg-slate-300 flex mx-auto justify-center m-full">
-      <div className="lg:w-11/12 w-full max-w-full flex flex-col border-x border-slate-800 bg-white" suppressHydrationWarning >
+      <div className="lg:w-11/12 w-full max-w-full flex flex-col border- bg-white" suppressHydrationWarning >
         <RoomChat roomId={room.id} roomTitle={room.title} roomTime={room.created_at_text} userName={room.user.name}/>
       </div>
     </main>

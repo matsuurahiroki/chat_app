@@ -197,12 +197,14 @@ export const authOptions: NextAuthOptions = {
       if (!r.ok) return false;
 
       // Rails から返された railsUserId（users.id）を受け取る
-      const { railsUserId } = (await r.json()) as {
+      const { railsUserId, railsUserName } = (await r.json()) as {
         railsUserId: string | number;
+        railsUserName: string | null;
       };
 
       // OAuth ログインでも userId を Rails users.id に統一する
       appUser.userId = String(railsUserId);
+      if (railsUserName?.trim()) appUser.name = railsUserName;
 
       return true; // ログイン続行
     },

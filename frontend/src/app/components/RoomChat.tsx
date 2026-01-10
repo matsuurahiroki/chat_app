@@ -309,19 +309,26 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`flex flex-col ${
-              m.isMe ? "justify-start" : "justify-end"
+            className={`w-full flex flex-col ${
+              m.isMe ? "items-start" : "items-end"
             }`}
           >
+            {!m.isMe && (
+              <p className="text-[9px] sm:text-sm text-cyan-400">
+                ユーザー<span className="text-[9px] sm:text-sm text-slate-400">:</span>{m.userName}
+              </p>
+            )}
             <p
-              className={`text-[9px] sm:text-sm mt-2 pb-0.5 ${
-                m.isMe ? "text-cyan-400" : "text-slate-400"
+              className={`text-[9px] sm:text-sm pb-0.5 ${
+                m.isMe ? "text-cyan-400 mt-2" : "text-slate-400"
               }`}
             >
               {formatJst(m.createdAt)}
               {m.editedAt && (
-                <span className="ml-2 md:text-[11px] sm:text-
-              [9px] text-[7px] text-slate-500">
+                <span
+                  className="ml-2 md:text-[11px] sm:text-
+              [9px] text-[7px] text-slate-500"
+                >
                   (編集済)
                 </span>
               )}
@@ -334,11 +341,6 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
               }`}
               onClick={(e) => openMenu(e, m)}
             >
-              {!m.isMe && (
-                <p className="md:text-base sm:text-sm text-xs text-cyan-400 mb-0.5">
-                  {m.userName}
-                </p>
-              )}
               <p className="whitespace-pre-wrap break-words md:text-base sm:text-sm text-xs">
                 {m.body}
               </p>
