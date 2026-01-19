@@ -1,0 +1,66 @@
+# codecov.yml
+
+codecov:
+  require_ci_to_pass: yes
+
+comment:
+  layout: 'diff, flags, files'
+  behavior: default
+  require_changes: no
+
+coverage:
+  precision: 2
+  round: down
+  range: '60..90'
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+
+      backend:
+        flags:
+          - backend
+        target: auto
+        threshold: 1%
+
+      frontend:
+        flags:
+          - frontend
+        target: auto
+        threshold: 1%
+
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+
+flags:
+  backend:
+    paths:
+      - backend/
+  frontend:
+    paths:
+      - frontend/
+
+ignore:
+  - '**/node_modules/**'
+  - 'frontend/.next/**'
+  - 'frontend/test/**'
+  - 'backend/spec/**'
+  - 'backend/db/**'
+  - 'backend/config/**'
+  - 'backend/vendor/**'
+
+# Docker内パスでlcovが出る場合のパス補正（必要なものだけ残してください）
+fixes:
+  - '/app/::backend/'
+  - '/usr/src/app/::frontend/'
+
+parsers:
+  lcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: yes
+      macro: yes

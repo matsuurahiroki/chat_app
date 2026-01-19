@@ -10,7 +10,7 @@ type Props = {
   userId: string;
 };
 
-export function ProfileForm({ initialName, initialEmail, userId }: Props) {
+const ProfileForm = ({ initialName, initialEmail, userId }: Props) => {
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
   const [busy, setBusy] = useState(false);
@@ -127,3 +127,5 @@ export function ProfileForm({ initialName, initialEmail, userId }: Props) {
     </div>
   );
 }
+
+export default ProfileForm;

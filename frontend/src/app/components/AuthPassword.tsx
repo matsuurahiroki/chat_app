@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 
-export function AuthPassword() {
+const AuthPassword = () => {
   const [currentPassword, setCurrentPassword] = useState<string>();
   const [newPassword, setNewPassword] = useState<string>();
   const [newPasswordConfirm, setNewPasswordConfirm] = useState<string>("");
@@ -101,3 +101,5 @@ export function AuthPassword() {
     </div>
   );
 }
+
+export default AuthPassword;

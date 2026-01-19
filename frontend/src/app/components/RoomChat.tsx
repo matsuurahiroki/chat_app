@@ -89,7 +89,6 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
         cache: "no-store",
       });
 
-      // 204 No Content でも成功扱いにする
       if (res.status === 204 || res.ok) {
         setMessages((prev) => prev.filter((r) => r.id !== m.id));
         alert("削除に成功しました");
@@ -238,7 +237,7 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
       }
     }
 
-    const res = await fetch("/api/bff/messages", {
+    const res = await fetch(`/api/bff/messages?roomId=${roomId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roomId, body: v }),

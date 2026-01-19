@@ -15,7 +15,7 @@ import { signIn } from "next-auth/react";
 
 type Props = { opened: boolean; onClose: () => void };
 
-export default function LoginModal({ opened, onClose }: Props) {
+const LoginModal = ({ opened, onClose }: Props) => {
   const [emailL, setEmailL] = useState("");
   const [passL, setPassL] = useState("");
   const [emailS, setEmailS] = useState("");
@@ -245,3 +245,5 @@ export default function LoginModal({ opened, onClose }: Props) {
     </Modal.Root>
   );
 }
+
+export default LoginModal;

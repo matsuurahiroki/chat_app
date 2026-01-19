@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Load the Rails application.
+# Railsアプリを読み込む、application.rb（= Railsアプリの設定・クラス定義の中核）を読み込みます。
 require_relative 'application'
 
-# Initialize the Rails application.
+# 「Railsアプリを初期化する」という説明
 Rails.application.initialize!

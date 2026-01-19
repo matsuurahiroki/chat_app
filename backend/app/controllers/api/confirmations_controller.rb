@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# backend/app/controllers/api/confirmations_controller.rb
+
 module Api
   class ConfirmationsController < ApplicationController
     protect_from_forgery with: :null_session

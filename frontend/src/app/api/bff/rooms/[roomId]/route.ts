@@ -1,17 +1,19 @@
 // /src/app/api/bff/rooms/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/nextauth/auth";
 
 const api = process.env.BACKEND_API_URL!;
 const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 
+type Params = Promise<{ roomId: string }>
+
 // ルーム一覧取得（ホーム画面用）
 export async function GET(
-  _req: Request,
-  context: { params: { roomId: string } }
+  req: NextRequest,
+  { params }: { params: Params },
 ) {
-  const { roomId } = await context.params;
+  const { roomId } = await params;
   const railsRes = await fetch(`${api}/api/rooms/${roomId}`, {
     headers: {
       "X-BFF-Token": BFF_SHARED_TOKEN,
@@ -40,7 +42,10 @@ export async function GET(
 }
 
 // ルーム作成（投稿モーダルからのPOST）
-export async function POST(req: Request) {
+export async function POST(
+  req: NextRequest,
+) {
+
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -81,18 +86,17 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(
-  _req: Request,
-  context: { params: { roomId: string } }
+  req: NextRequest,
+  { params }: { params: Params },
 ) {
+  const { roomId } = await params;
   const session = await getServerSession(authOptions);
   if (!session)
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const userId = (session).userId;
+  const userId = session.userId;
   if (!userId)
     return NextResponse.json({ error: "no_user_id" }, { status: 400 });
-
-  const { roomId } = await context.params;
 
   const railsRes = await fetch(`${api}/api/rooms/${roomId}`, {
     method: "DELETE",
@@ -111,8 +115,8 @@ export async function DELETE(
     });
   }
 
-// ここでいるparamsはアクセスしたroom、そのidを取得している
-// Railsのrequest.headers['X-User-Id']はTSのX-User-Idのこと
+  // ここでいるparamsはアクセスしたroom、そのidを取得している
+  // Railsのrequest.headers['X-User-Id']はTSのX-User-Idのこと
 
   return NextResponse.json(json ?? { ok: true }, { status: 200 });
 }

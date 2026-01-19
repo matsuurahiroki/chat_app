@@ -1,15 +1,33 @@
 AllCops:
   NewCops: enable
   SuggestExtensions: false
+  TargetRubyVersion: 3.3
+  Include:
+    - "backend/**/*.rb"
+  Exclude:
+    - "bin/*"
+    - "db/schema.rb"
+    - "db/migrate/*.rb"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    - "log/**/*"
+    - "test/**/*"
+    - "../frontend/**/*"
+    - "**/Rakefile"
+    - "**/Gemfile"
+    - "**/Capfile"
+    - "**/CamelCase.rb"
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 Metrics/BlockLength:
   Enabled: false
 
-# メソッド行数は少し緩める（例: 20 行まで OK）
 Metrics/MethodLength:
   Max: 240
 
-# 複雑さ系はいったん無効にする
 Metrics/AbcSize:
   Enabled: false
 
@@ -23,4 +41,16 @@ Layout/LineLength:
   Max: 2000
 
 Style/Documentation:
+  Enabled: false
+
+Layout/IndentationConsistency:
+  Enabled: true
+
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/SpaceBeforeBrackets:
+  Enabled: true
+
+Lint/AmbiguousAssignment:
   Enabled: false

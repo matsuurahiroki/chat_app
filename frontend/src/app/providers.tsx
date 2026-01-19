@@ -6,11 +6,11 @@ import { MantineProvider, createTheme } from "@mantine/core";
 
 const theme = createTheme({});
 
-export default function AppProviders({
+const AppProviders = ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <SessionProvider>
       <MantineProvider theme={theme} defaultColorScheme="light">
@@ -19,3 +19,5 @@ export default function AppProviders({
     </SessionProvider>
   );
 }
+
+export default AppProviders;

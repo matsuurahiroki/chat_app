@@ -20,10 +20,12 @@ module Api
         user = User.find_by(email:)
 
         unless user&.valid_password?(password)
-          # user何ある且つ、valid_password?でぱすわーどが正しいか確認
+          # userある且つ、valid_password?でpasswordが正しいか確認
           render json: { error: 'invalid_credentials' }, status: :unauthorized
           return
         end
+
+        # sign_in(:user, user)
 
         # unless user.confirmed?
         #   render json: { error: 'email_not_confirmed' }, status: :forbidden

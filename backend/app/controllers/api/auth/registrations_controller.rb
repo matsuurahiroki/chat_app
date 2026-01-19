@@ -12,7 +12,11 @@ module Api
           password: params[:password] # ← Devise が encrypted_password に変換
         )
 
+        user.skip_confirmation!
+        user.skip_confirmation_notification! # 確認メール機能一時無効化
+
         if user.save
+
           render json: {
             id: user.id,
             email: user.email,

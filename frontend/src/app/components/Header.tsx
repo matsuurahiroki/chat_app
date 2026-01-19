@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* /src/app/components/Header.tsx */
 "use client";
 
@@ -11,7 +10,7 @@ type Props = {
   onLoginClick: () => void;
 };
 
-export default function Header({ onLoginClick }: Props) {
+const Header = ({ onLoginClick }: Props) => {
   const route = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
@@ -23,11 +22,6 @@ export default function Header({ onLoginClick }: Props) {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
-
-  if (typeof window !== "undefined") {
-    (window as any)._debugSession = session;
-    (window as any)._debugStatus = status;
-  }
 
   const handlePostClick = () => {
     if (status !== "authenticated") {
@@ -104,7 +98,7 @@ export default function Header({ onLoginClick }: Props) {
       <header className="w-full md:h-[70px] h-[50px] flex items-center justify-center bg-white shadow-md  z-10 fixed">
         <div className="flex w-10/12 items-center justify-between h-full mx-9">
           <Button
-            className="text-cyan-400 font-sans font-bold md:text-base sm:text-sm text-xs whitespace-nowrap"
+            className="px-3 py-4 rounded-lg  hover:bg-slate-100 text-cyan-400 font-sans font-bold md:text-base sm:text-sm text-xs whitespace-nowrap"
             onClick={() => route.push("/")}
           >
             ホーム
@@ -124,14 +118,14 @@ export default function Header({ onLoginClick }: Props) {
             </Button>
             {status === "authenticated" ? (
               <Button
-                className="text-cyan-400 font-semibold md:text-base sm:text-sm text-xs whitespace-nowrap"
+                className="px-3 py-4 rounded-lg  hover:bg-slate-100 text-cyan-400 font-semibold md:text-base sm:text-sm text-xs whitespace-nowrap"
                 onClick={() => route.push("/profile")}
               >
                 {session?.user?.name ?? "プロフィール"}
               </Button>
             ) : (
               <Button
-                className="text-cyan-400 font-sans md:text-base sm:text-sm text-xs font-bold whitespace-nowrap"
+                className="text-cyan-400 px-3 py-4 rounded-lg  hover:bg-slate-100 font-sans md:text-base sm:text-sm text-xs font-bold whitespace-nowrap"
                 onClick={handleLoginClick}
               >
                 ログイン / 新規登録
@@ -304,3 +298,5 @@ export default function Header({ onLoginClick }: Props) {
     </>
   );
 }
+
+export default Header;

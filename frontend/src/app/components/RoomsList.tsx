@@ -46,7 +46,6 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
 
   const myUserId = session?.userId ? Number(session.userId) : null;
 
-  // ★削除後に即消すため、ローカルstateで描画
   const [list, setList] = useState<Room[]>(rooms);
 
   // ポップアップ

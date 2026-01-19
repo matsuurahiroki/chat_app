@@ -8,6 +8,10 @@ const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 
 // ルーム一覧取得（ホーム画面用）
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const railsRes = await fetch(`${api}/api/rooms`, {
     headers: {
       "X-BFF-Token": BFF_SHARED_TOKEN,
@@ -18,10 +22,9 @@ export async function GET() {
   const json = await railsRes.json().catch(() => null);
 
   if (!railsRes.ok) {
-    return NextResponse.json(
-      json ?? { error: "rails_error" },
-      { status: railsRes.status }
-    );
+    return NextResponse.json(json ?? { error: "rails_error" }, {
+      status: railsRes.status,
+    });
   }
 
   return NextResponse.json(json, { status: 200 });
@@ -35,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   // jwt/session に userId を入れている想定
-  const userId = (session).userId;
+  const userId = session.userId;
   if (!userId) {
     return NextResponse.json({ error: "no_user_id" }, { status: 400 });
   }
@@ -60,10 +63,9 @@ export async function POST(req: Request) {
   const json = await railsRes.json().catch(() => null);
 
   if (!railsRes.ok) {
-    return NextResponse.json(
-      json ?? { error: "rails_error" },
-      { status: railsRes.status }
-    );
+    return NextResponse.json(json ?? { error: "rails_error" }, {
+      status: railsRes.status,
+    });
   }
 
   return NextResponse.json(json, { status: 201 });

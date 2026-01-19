@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { ProfileForm } from "./ProfileForm";
-import { AuthPassword } from "../components/AuthPassword";
+import  ProfileForm  from "./ProfileForm";
+import  AuthPassword  from "../components/AuthPassword";
 import DeleteTab from "./DeleteTab";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   userId: string;
 };
 
-export function SettingTabs({ initialName, initialEmail, userId }: Props) {
+const SettingTabs = ({ initialName, initialEmail, userId }: Props) => {
   const [tab, setTab] = useState<"profile" | "auth" | "delete">("profile");
 
   return (
@@ -87,3 +87,5 @@ export function SettingTabs({ initialName, initialEmail, userId }: Props) {
     </main>
   );
 }
+
+export default SettingTabs;

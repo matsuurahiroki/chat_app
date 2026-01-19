@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/nextauth/auth";
-import { SettingTabs } from "../components/SettingTabs"; // ← 新しく作るクライアントコンポーネント
+import  SettingTabs  from "../components/SettingTabs"; // ← 新しく作るクライアントコンポーネント
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
