@@ -56,7 +56,8 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/chatapp_test
-      BFF_SHARED_TOKEN: ${{ secrets.BFF_SHARED_TOKEN }}
+      BFF_SHARED_TOKEN: test-bff-token
+      SECRET_KEY_BASE: test
 
     steps:
       - uses: actions/checkout@v4
