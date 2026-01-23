@@ -55,7 +55,7 @@ jobs:
 
     env:
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/chatapp_test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/chatapp_test
       BFF_SHARED_TOKEN: ${{ secrets.BFF_SHARED_TOKEN }}
 
     steps:
