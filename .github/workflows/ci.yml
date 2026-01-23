@@ -44,6 +44,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: chatapp_test
+          PGUSER: postgres
         ports:
           - "5432:5432"
         options: >-
@@ -64,6 +65,7 @@ jobs:
         with:
           ruby-version: "3.3"
           bundler-cache: true
+          working-directory: backend
 
       - run: bundle exec rails db:prepare
       - run: bundle exec rspec
