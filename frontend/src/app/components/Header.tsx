@@ -136,7 +136,7 @@ const Header = ({ onLoginClick }: Props) => {
           {/* スマホ用（sm未満） */}
           <button
             type="button"
-            className="sm:hidden shrink-0 py-2 text-cyan-400 font-bold text-2xl"
+            className="md:text-base sm:text-sm sm:hidden shrink-0 py-2 text-cyan-400 font-bold text-2xl"
             aria-label="メニューを開く"
             onClick={() => setIsMenuOpen(true)}
           >
