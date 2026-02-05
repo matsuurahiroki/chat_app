@@ -3,7 +3,7 @@
 # app/models/user.rb
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
-         :validatable, :confirmable,
+         :validatable, # :confirmable,
          :jwt_authenticatable, jwt_revocation_strategy: Devise::JWT::RevocationStrategies::Null
 
   has_many :identities, dependent: :destroy # Outh関連のデータ

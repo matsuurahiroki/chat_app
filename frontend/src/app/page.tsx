@@ -25,7 +25,7 @@ const fetchRooms = async (): Promise<Room[]> => {
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
-      cookie: cookies().toString(),
+      cookie: (await cookies()).toString(),
     },
   });
 

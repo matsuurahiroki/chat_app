@@ -22,13 +22,9 @@ COPY backend/Gemfile backend/Gemfile.lock ./
 
 # Gem install
 RUN bundle install
-RUN gem install rails
 
 # start.sh を先にコピーして実行権限付与
 COPY backend/start.sh ./start.sh
-
-# envファイルをコピー
-COPY backend/.env.production /app/.env.production
 
 # アプリケーション全体をコピー
 COPY backend/ .

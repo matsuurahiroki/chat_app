@@ -1,8 +1,11 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 rm -f tmp/pids/server.pid
-bundle exec rails db:create
-bundle exec rails db:migrate
 
-bundle exec rails s -b 0.0.0.0 -p 8000
+# 必要なときだけマイグレーション（ローカルはtrue、本番はfalseが基本）
+if [ "${RUN_DB_MIGRATE:-false}" = 'true' ]; then
+  bundle exec rails db:migrate
+fi
+
+exec bundle exec rails s -b 0.0.0.0 -p "${PORT:-8000}" -e "${RAILS_ENV:-production}"

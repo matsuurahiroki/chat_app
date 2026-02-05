@@ -48,6 +48,11 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
 
   const [list, setList] = useState<Room[]>(rooms);
 
+  // rooms が増減された場合、再描画
+  useEffect(() => {
+    setList(rooms);
+  }, [rooms]);
+
   // ポップアップ
   const [confirmRoom, setConfirmRoom] = useState<Room | null>(null);
   const [busy, setBusy] = useState(false);
@@ -109,8 +114,9 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
             key={room.id}
             href={`/rooms/${room.id}`}
             onClick={handleRoomClick()}
+            className="!cursor-pointer"
           >
-            <div className="rounded-2xl bg-white shadow-sm border border-slate-300 mb-3 hover:bg-slate-50 cursor-pointer overflow-hidden flex items-stretch">
+            <div className="rounded-2xl bg-white shadow-sm border border-slate-300 mb-3 hover:bg-slate-50 overflow-hidden flex items-stretch ">
               <div className="min-w-0 flex-1 p-2 pr-0 sm:p-4 sm:pr-0">
                 <h2 className="text-[10px] line-clamp-3 sm:text-sm md:text-base font-semibold text-cyan-400 break-words">
                   {room.title}

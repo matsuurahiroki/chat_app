@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   if (!api)
     return NextResponse.json(
       { error: "API base URL undefined" },
-      { status: 500 }
+      { status: 500 },
     );
 
   const raw = await req.json();

@@ -9,7 +9,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import TwitterProvider from "next-auth/providers/twitter";
 
-// フロントエンドのベースURL（例: http://localhost:80）
+// フロントエンドのベースURL（例: https://localhost:8443）
 // BFF(API Route) にアクセスするときに使う
 const FRONT = process.env.NEXTAUTH_URL!;
 
@@ -120,13 +120,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error(msg);
         }
 
-        // ★register成功：セッションを作らない（userを返さない）
-        if (isRegister) {
-          throw new Error("REGISTER_OK");
-          // ここで return user をしないのが重要
-        }
-
-        // login成功：ここだけ user を返す
+        // login成功 user を返す
         let data: RailsAuthResponse = {};
         try {
           data = JSON.parse(text) as RailsAuthResponse;

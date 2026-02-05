@@ -6,14 +6,21 @@ module Api
       protect_from_forgery with: :null_session
 
       def create
+        email = params[:email] || params.dig(:registration, :email)
+
+        if User.exists?(email:)
+          render json: { error: 'email_duplication' }, status: :conflict
+          return
+        end
+
         user = User.new(
           name: params[:name],
           email: params[:email],
           password: params[:password] # ← Devise が encrypted_password に変換
         )
 
-        user.skip_confirmation!
-        user.skip_confirmation_notification! # 確認メール機能一時無効化
+        # user.skip_confirmation!
+        # user.skip_confirmation_notification! # 確認メール機能一時無効化
 
         if user.save
 
