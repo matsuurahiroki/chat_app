@@ -104,6 +104,13 @@ export const authOptions: NextAuthOptions = {
         });
 
         const text = await res.text();
+        const ct = res.headers.get("content-type") || "";
+        const loc = res.headers.get("location") || "";
+
+        console.error("[AUTH] status:", res.status, res.statusText);
+        console.error("[AUTH] content-type:", ct);
+        if (loc) console.error("[AUTH] location:", loc);
+        console.error("[AUTH] body(head):", text.slice(0, 300));
 
         // 失敗時（既存のままでOK）
         if (!res.ok) {
@@ -113,9 +120,10 @@ export const authOptions: NextAuthOptions = {
             if (Array.isArray(data?.errors) && data.errors.length > 0)
               msg = data.errors.join("\n");
             else if (typeof data?.error === "string") msg = data.error;
+            else if (text.trim() === "")
+              msg = `空のエラーレスポンスです（status ${res.status}）`;
           } catch {
-            console.error("[AUTH] Unexpected error response (not JSON):", text);
-            msg = "予期しないエラーが発生しました";
+            msg = `予期しないエラーが発生しました（status ${res.status} / ${ct}）`;
           }
           throw new Error(msg);
         }
