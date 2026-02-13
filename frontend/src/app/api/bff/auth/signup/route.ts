@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify(payload),
-      redirect: 'manual', // ← 301/302を踏んだら検知できる
+      redirect: 'manual',
     });
 
     const ct = r.headers.get('content-type') || '';
