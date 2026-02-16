@@ -9,8 +9,6 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   namespace :api do
-    get  'confirm',        to: 'confirmations#show'
-    post 'confirm/resend', to: 'confirmations#resend'
     resource :user, only: [:destroy] # => DELETE /api/user resourcesは複数形ではなく単数形
     resources :users, only: [:update]
     resources :rooms, only: %i[index create show destroy] do
