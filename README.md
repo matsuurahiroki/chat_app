@@ -1,37 +1,46 @@
-# （アプリ名）
+# ツナガル
 
 ## 1. 概要
-- アプリの一言説明：
-- デモURL（本番環境）：
+![ツナガル](assets/tsunagaru.png)
+- デモURL（本番環境）：[chatroomblog.com](https://chatroomblog.com/)
 - テストアカウント：
-  - email: guest@example.com
+  - email: guest1@example.com
   - password: password1234
 
 ## 2. 開発背景（なぜ作ったのか）
-- 課題：
-- 解決したいこと：
-- 主要な工夫：
+私は色んな人と話すことが好きで、人と人が気軽につながり、楽しめるコンテンツを作りたいと考えていました。しかし、既存のサービスにはシンプルで使いやすいが、UIが古風（例：4chan）、モダンだが機能が多すぎて初心者には使いづらいもの（例：X、Discord）です。そこで私は、シンプルさとモダンさの中間にあるアプリを作りたいと考え、その構想から生まれたのが「ツナガル」 です。
 
-## 3. デモ画像 / 操作方法
-### 主要画面
-- 画像（スクショを貼る）
-- 画像（スクショを貼る）
-
-### 操作手順（採用担当者向け）
-1. 本番URLへアクセス
-2. テストアカウントでログイン
-3. ルーム一覧 → ルーム詳細 → メッセージ確認
-
-## 4. 使用技術
+## 3. 使用技術
 ### フロントエンド
-- Next.js / TypeScript
-- （UIライブラリ等）
-- NextAuth（認証）など
+- React 19.2.3
+- Next.js 15.5.9
+- TypeScript 5.9.3
+- NextAuth 4.24.13
+
+#### UI / デザイン
+- Mantine 8.3.12
+- Tailwind CSS 3.4.19
+- Headless UI 2.2.9
+- Tabler Icons 3.36.1
+- Framer Motion 12.23.26
+
+#### コード品質
+- ESLint 9.39.2
+
+#### テスト
+- Jest 30.2.0
+- React Testing Library 16.3.2
 
 ### バックエンド
-- Ruby on Rails（API）
-- PostgreSQL
-- 認証（Devise / JWT 等）
+- Ruby 3.3.8
+- Rails 7.2.3
+- PostgreSQL 1.5.9
+
+#### コード品質
+- rubocop 1.81.7
+
+#### テスト
+- rspec-rails 8.0.2
 
 ### インフラ
 - Vercel（フロント）
@@ -46,13 +55,4 @@
 
 ## 6. インフラ構成図
 ```mermaid
-flowchart LR
-  U[User] -->|HTTPS| V[Vercel\nNext.js]
-  V -->|API| ALB_DNS[api.chatroomblog.com]
-  ALB_DNS --> ALB[ALB 443 (ACM)]
-  ALB --> TG[TargetGroup 80]
-  TG --> NGINX[nginx 80]
-  NGINX --> RAILS[Rails(Puma) 8000]
-  RAILS -->|5432| RDS[(RDS PostgreSQL)]
-  NGINX --> CW[(CloudWatch Logs)]
-  RAILS --> CW
+
