@@ -15,6 +15,8 @@
 - React 19.2.3
 - Next.js 15.5.9
 - TypeScript 5.9.3
+
+#### 認証
 - NextAuth 4.24.13
 
 #### UI / デザイン
@@ -26,6 +28,7 @@
 
 #### コード品質
 - ESLint 9.39.2
+- Prettier
 
 #### テスト
 - Jest 30.2.0
@@ -36,6 +39,11 @@
 - Rails 7.2.3
 - PostgreSQL 1.5.9
 
+#### 認証
+- Devise 4.9.4
+- JWT（devise-jwt 0.12.1）
+- OAuth（Google, Facebook）
+
 #### コード品質
 - rubocop 1.81.7
 
@@ -43,9 +51,11 @@
 - rspec-rails 8.0.2
 
 ### インフラ
-- Vercel（フロント）
-- AWS: ECS(Fargate), ALB, RDS(PostgreSQL), CloudWatch Logs
--（必要なら）VPC Endpoint（ECR/Logs/SSM系）
+-  AWS(Route53 / ALB / VPC / ECR / ECS Fargate / RDS PostgreSQL / S3) / Nginx / Vercel
+
+#### CI / CD: GitHub Actions
+
+#### 環境構築: Docker / Docker Compose
 
 ## 5. 機能一覧
 - ユーザー登録 / ログイン
