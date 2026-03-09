@@ -7,7 +7,6 @@ RSpec.describe 'JWT header', type: :request do
       name: 'test_user',
       email: email,
       password: password,
-      confirmed_at: Time.current
     )
   end
 

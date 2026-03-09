@@ -13,7 +13,6 @@ RSpec.describe 'Login token', type: :request do
       name: 'TestUser',
       email: email,
       password: password,
-      confirmed_at: Time.current
     )
   end
 
