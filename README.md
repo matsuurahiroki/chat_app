@@ -57,9 +57,16 @@
 
 #### 環境構築: Docker / Docker Compose
 
-## 5. 機能一覧
+## 4. 機能一覧
 - ユーザー登録 / ログイン / ログアウト
 - Google・FacebookのOuth機能
 - ルーム作成 / 一覧 / 削除
 - メッセージ投稿 / 一覧 / 編集 / 削除
 - メールアドレス・名前の変更機能
+
+## 5. ER図
+![ER図](assets/er_diagram_from_schema_v2.png)
+
+## 6. インフラ構成図
+![インフラ構成図](assets/AWSグローバル・トランザクション・エンジン・アーキテクチャ_backup_100170_backup_1002fb_backup_100418.jpg)
+
