@@ -25,13 +25,6 @@ module Api
           return
         end
 
-        # sign_in(:user, user)
-
-        # unless user.confirmed?
-        #   render json: { error: 'email_not_confirmed' }, status: :forbidden
-        #   return
-        # end
-
         # ：id / email / name を返す
         render json: {
           id: user.id,
