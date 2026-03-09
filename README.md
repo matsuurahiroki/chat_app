@@ -65,8 +65,8 @@
 - メールアドレス・名前の変更機能
 
 ## 5. ER図
-![ER図](assets/er_diagram_from_schema_v2.png)
+![ER図](assets/ER図.png)
 
 ## 6. インフラ構成図
-![インフラ構成図](assets/AWSグローバル・トランザクション・エンジン・アーキテクチャ_backup_100170_backup_1002fb_backup_100418.jpg)
+![インフラ構成図](assets/インフラ構成図.png)
 
