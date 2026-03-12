@@ -1,4 +1,4 @@
-FROM nginx:1.26.4-alpine
+FROM nginx:latest
 
 # カスタムecs.confをコピー
 COPY nginx/ecs.conf /etc/nginx/nginx.conf
