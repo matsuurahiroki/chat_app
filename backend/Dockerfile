@@ -1,4 +1,4 @@
-FROM ruby:3.3.8
+FROM ruby:latest-slim
 
 # 必要パッケージをインストール
 RUN apt-get update -qq && \
