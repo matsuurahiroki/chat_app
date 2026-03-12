@@ -1,4 +1,4 @@
-FROM ruby:latest-slim
+FROM ruby:3.3.10-slim-bookworm
 
 # 必要パッケージをインストール
 RUN apt-get update -qq && \
