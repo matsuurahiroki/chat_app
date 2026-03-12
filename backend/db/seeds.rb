@@ -1,5 +1,4 @@
 # db/seeds.rb
-
 return if Rails.env.test?
 
 guest1 = User.find_or_create_by!(email: 'guest1@example.com') do |u|
@@ -14,9 +13,6 @@ guest2 = User.find_or_create_by!(email: 'guest2@example.com') do |u|
   u.password_confirmation = 'password1234'
 end
 
-# 既に作られていて confirmed_at が nil の場合もあるので補正
-guest1.update!(confirmed_at: Time.current) if guest1.respond_to?(:confirmed_at) && guest1.confirmed_at.nil?
-
 rooms = 5.times.map do |i|
   Room.find_or_create_by!(title: "Sample Room #{i + 1}", user: guest1)
 end
@@ -26,14 +22,14 @@ rooms.each do |room|
     Message.find_or_create_by!(
       room: room,
       user: guest1,
-      body: "サンプルメッセージ #{j + 1}",
+      body: "サンプルメッセージ #{j + 1} by Guest1 in #{room.title}",
       edited_at: j == 2 ? Time.current : nil
     )
 
     Message.find_or_create_by!(
       room: room,
       user: guest2,
-      body: "サンプルメッセージ #{j + 1}",
+      body: "サンプルメッセージ #{j + 1} by Guest2 in #{room.title}",
       edited_at: j == 2 ? Time.current : nil
     )
   end

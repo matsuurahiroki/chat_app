@@ -1,0 +1,103 @@
+name: Deploy to ECR and optionally ECS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "nginx/**"
+      - ".github/workflows/deploy-ecs.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECS_CLUSTER: chatapp-ecs
+  ECS_SERVICE: nginx-task-service-n7cszjmf
+  ECR_REPOSITORY_RAILS: rails-api
+  ECR_REPOSITORY_NGINX: nginx
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image variables
+        run: |
+          echo 'ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}' >> "$GITHUB_ENV"
+          echo 'RAILS_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_RAILS }}:latest' >> "$GITHUB_ENV"
+          echo 'NGINX_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_NGINX }}:latest' >> "$GITHUB_ENV"
+
+      - name: Build and push rails-api image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t "$RAILS_IMAGE" \
+            .
+          docker push "$RAILS_IMAGE"
+
+      - name: Build and push nginx image
+        run: |
+          docker build \
+            -f nginx/Dockerfile \
+            -t "$NGINX_IMAGE" \
+            .
+          docker push "$NGINX_IMAGE"
+
+      - name: Check ECS service state
+        id: ecs-check
+        shell: bash
+        run: |
+          SERVICE_JSON="$(aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --region "$AWS_REGION" \
+            --output json)"
+
+          FAILURES_COUNT="$(echo "$SERVICE_JSON" | jq '.failures | length')"
+          SERVICES_COUNT="$(echo "$SERVICE_JSON" | jq '.services | length')"
+
+          if [ "$FAILURES_COUNT" != '0' ] || [ "$SERVICES_COUNT" = '0' ]; then
+            echo 'service_exists=false' >> "$GITHUB_OUTPUT"
+            echo 'service_status=MISSING' >> "$GITHUB_OUTPUT"
+            echo 'desired_count=0' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SERVICE_STATUS="$(echo "$SERVICE_JSON" | jq -r '.services[0].status')"
+          DESIRED_COUNT="$(echo "$SERVICE_JSON" | jq -r '.services[0].desiredCount')"
+          RUNNING_COUNT="$(echo "$SERVICE_JSON" | jq -r '.services[0].runningCount')"
+
+          echo "service_exists=true" >> "$GITHUB_OUTPUT"
+          echo "service_status=$SERVICE_STATUS" >> "$GITHUB_OUTPUT"
+          echo "desired_count=$DESIRED_COUNT" >> "$GITHUB_OUTPUT"
+          echo "running_count=$RUNNING_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to ECS
+        if: steps.ecs-check.outputs.service_exists == 'true' && steps.ecs-check.outputs.service_status == 'ACTIVE' && steps.ecs-check.outputs.desired_count != '0'
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --force-new-deployment \
+            --region "$AWS_REGION"
+
+      - name: Skip ECS deploy
+        if: steps.ecs-check.outputs.service_exists != 'true' || steps.ecs-check.outputs.service_status != 'ACTIVE' || steps.ecs-check.outputs.desired_count == '0'
+        run: echo 'ECR push only. ECS deploy skipped.'

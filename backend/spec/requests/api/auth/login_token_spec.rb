@@ -12,7 +12,7 @@ RSpec.describe 'Login token', type: :request do
     User.create!(
       name: 'TestUser',
       email: email,
-      password: password,
+      password: password
     )
   end
 

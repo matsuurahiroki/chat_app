@@ -6,7 +6,7 @@ RSpec.describe 'JWT header', type: :request do
     User.create!(
       name: 'test_user',
       email: email,
-      password: password,
+      password: password
     )
   end
 
