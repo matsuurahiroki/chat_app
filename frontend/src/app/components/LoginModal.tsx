@@ -12,6 +12,7 @@ import {
   Divider,
 } from "@mantine/core";
 import { signIn } from "next-auth/react";
+import { errorMessages } from "@/lib/auth/errorMessages";
 
 type Props = { opened: boolean; onClose: () => void };
 
@@ -27,16 +28,6 @@ const LoginModal = ({ opened, onClose }: Props) => {
     text: string;
   } | null>(null);
 
-  const humanize = (code: string) => {
-    if (code === "email_not_confirmed")
-      return "メール確認が必要です。確認メールのリンクを開いてください。";
-    if (code === "invalid_credentials" || code === "CredentialsSignin")
-      return "メールまたはパスワードが正しくありません。";
-    if (code === "REGISTER_OK")
-      return "確認メールを送信しました。メール内リンクを開いてからログインしてください。";
-    return code;
-  };
-
   const loginEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusy(true);
@@ -50,7 +41,7 @@ const LoginModal = ({ opened, onClose }: Props) => {
     });
 
     if (res?.error) {
-      setMsg({ type: "error", text: humanize(res.error) });
+      setMsg({ type: "error", text: errorMessages(res.error) });
     } else {
       setMsg(null);
       onClose();
@@ -72,8 +63,11 @@ const LoginModal = ({ opened, onClose }: Props) => {
       redirect: false,
     });
 
+    console.log("signup signIn result:", res);
+    console.log("signup signIn error:", res?.error);
+
     if (res?.error === "REGISTER_OK") {
-      setMsg({ type: "success", text: humanize("REGISTER_OK") });
+      setMsg({ type: "success", text: errorMessages(res.error) });
 
       // ログインタブへ戻す（ついでにログイン欄へメールをコピー）
       setEmailL(emailS);
@@ -83,13 +77,7 @@ const LoginModal = ({ opened, onClose }: Props) => {
     }
 
     if (res?.error) {
-      setMsg({ type: "error", text: humanize(res.error) });
-    } else {
-      // 万一ここに来た場合も成功表示
-      setMsg({
-        type: "success",
-        text: "登録しました。確認メールを開いてからログインしてください。",
-      });
+      setMsg({ type: "error", text: errorMessages(res.error) });
     }
 
     setBusy(false);
@@ -244,6 +232,6 @@ const LoginModal = ({ opened, onClose }: Props) => {
       </Modal.Content>
     </Modal.Root>
   );
-}
+};
 
 export default LoginModal;

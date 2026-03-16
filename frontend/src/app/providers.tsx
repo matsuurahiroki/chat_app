@@ -2,22 +2,22 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { MantineProvider, createTheme } from "@mantine/core";
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 
-const theme = createTheme({});
-
-const AppProviders = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const AppProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionProvider>
-      <MantineProvider theme={theme} defaultColorScheme="light">
+      <MantineProvider>
+        <Notifications
+          position="top-center"
+          limit={1}
+          zIndex={3000}
+        />
         {children}
       </MantineProvider>
     </SessionProvider>
   );
-}
+};
 
 export default AppProviders;

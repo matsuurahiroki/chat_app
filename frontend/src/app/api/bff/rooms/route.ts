@@ -8,10 +8,6 @@ const BFF_SHARED_TOKEN = process.env.BFF_SHARED_TOKEN!;
 
 // ルーム一覧取得（ホーム画面用）
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
   const railsRes = await fetch(`${api}/api/rooms`, {
     headers: {
       "X-BFF-Token": BFF_SHARED_TOKEN,

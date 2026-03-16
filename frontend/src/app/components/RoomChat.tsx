@@ -1,9 +1,9 @@
-// app/components/RoomChat.tsx
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toastPopup";
 
 type Message = {
   id: number;
@@ -14,8 +14,6 @@ type Message = {
   editedAt?: string | null;
 };
 
-// Messageらのプロパティの要素名はRails側のJSONに合わせている(今回の場合はカラム名から抽出)
-
 type RoomChatProps = {
   roomId: number;
   roomTitle: string;
@@ -23,7 +21,11 @@ type RoomChatProps = {
   userName: string;
 };
 
-type MenuState = { messageId: number; x: number; y: number } | null;
+type MenuState = {
+  messageId: number;
+  x: number;
+  y: number;
+} | null;
 
 const fmt = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
@@ -37,106 +39,108 @@ const fmt = new Intl.DateTimeFormat("ja-JP", {
 
 const formatJst = (iso: string) => fmt.format(new Date(iso));
 
-const initialMessages: Message[] = [];
-
 const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
   const { data: session, status } = useSession();
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const router = useRouter();
+
+  // -----------------------------
+  // state / ref
+  // -----------------------------
+  const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const router = useRouter();
-  const listRef = useRef<HTMLDivElement | null>(null);
+
   const [editingId, setEditingId] = useState<number | null>(null);
-  const shouldJumpRef = useRef(true);
+  const [originalText, setOriginalText] = useState("");
+
   const [menu, setMenu] = useState<MenuState>(null);
-  const selectedMessage = menu
-    ? messages.find((mm) => mm.id === menu.messageId)
-    : null;
-  const closeMenu = () => setMenu(null);
-  const startEdit = (m: Message) => {
-    setEditingId(m.id);
-    setText(m.body); // 下の入力欄に本文を入れて編集させる
+
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const shouldJumpRef = useRef(true);
+
+  // -----------------------------
+  // derived data
+  // -----------------------------
+  let selectedMessage: Message | null = null;
+
+  if (menu) {
+    selectedMessage =
+      messages.find((message) => message.id === menu.messageId) ?? null;
+  }
+
+  // -----------------------------
+  // ui helper
+  // -----------------------------
+  const closeMenu = () => {
+    setMenu(null);
   };
-  const openMenu = (e: React.MouseEvent, m: Message) => {
-    if (!m.isMe) return;
 
-    const sel = window.getSelection();
-    if (sel && sel.toString().trim().length > 0) return;
+  const startEdit = (message: Message) => {
+    setEditingId(message.id);
+    setText(message.body);
+    setOriginalText(message.body);
+  };
 
-    // 同じメッセージを再クリックで閉じる
-    if (menu?.messageId === m.id) {
-      setMenu(null);
+  const cancelEdit = () => {
+    setEditingId(null);
+    setText("");
+    setOriginalText("");
+  };
+
+  const openMenu = (event: React.MouseEvent, message: Message) => {
+    if (!message.isMe) return;
+
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) return;
+
+    if (menu?.messageId === message.id) {
+      closeMenu();
       return;
     }
 
     const margin = 8;
-    const x0 = e.clientX;
-    const y0 = e.clientY - margin;
+    const rawX = event.clientX;
+    const rawY = event.clientY - margin;
 
-    const x = Math.max(margin, Math.min(x0, window.innerWidth - margin));
-    const y = Math.max(margin, Math.min(y0, window.innerHeight - margin));
+    const menuX = Math.max(margin, Math.min(rawX, window.innerWidth - margin));
+    const menuY = Math.max(margin, Math.min(rawY, window.innerHeight - margin));
 
-    setMenu({ messageId: m.id, x, y });
+    setMenu({
+      messageId: message.id,
+      x: menuX,
+      y: menuY,
+    });
   };
-
-  const deleteMessage = async (m: Message) => {
-    if (busy) return;
-
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/bff/messages/${m.id}?roomId=${roomId}`, {
-        method: "DELETE",
-        cache: "no-store",
-      });
-
-      if (res.status === 204 || res.ok) {
-        setMessages((prev) => prev.filter((r) => r.id !== m.id));
-        alert("削除に成功しました");
-        router.refresh();
-        return;
-      }
-
-      const data = await res.json().catch(() => null);
-      alert(data?.error ?? "削除に失敗しました");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  useEffect(() => {
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  }, []);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("scrollToBottomAfterReload") === "1") {
-      shouldJumpRef.current = true;
-    }
-  }, []);
 
   const jumpToBottom = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return;
-    // 投稿時移動
-    el.scrollTop = el.scrollHeight;
+    const listElement = listRef.current;
+    if (!listElement) return;
+
+    listElement.scrollTop = listElement.scrollHeight;
   }, []);
 
+  // -----------------------------
+  // api
+  // -----------------------------
   const loadMessages = useCallback(async () => {
-    const res = await fetch(`/api/bff/messages?roomId=${roomId}`, {
+    const response = await fetch(`/api/bff/messages?roomId=${roomId}`, {
       cache: "no-store",
     });
-    const text = await res.text().catch(() => "");
-    let data = null;
+
+    const responseText = await response.text().catch(() => "");
+    let responseData = null;
+
     try {
-      data = text ? JSON.parse(text) : null;
+      responseData = responseText ? JSON.parse(responseText) : null;
     } catch {
-      data = null;
+      responseData = null;
     }
 
-    if (!res.ok) {
+    if (!response.ok) {
       const info = {
-        status: res.status,
-        contentType: res.headers.get("content-type"),
-        text: text.slice(0, 500),
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        text: responseText.slice(0, 500),
       };
       console.error("load messages failed:\n" + JSON.stringify(info, null, 2));
       return;
@@ -144,20 +148,189 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
 
     const myId = session?.userId;
 
-    const list: Message[] = Array.isArray(data)
-      ? data.map((m) => ({
-          id: m.id,
-          userName: m.user?.name ?? "unknown",
-          body: m.body,
-          isMe: myId ? String(m.user_id) === String(myId) : false,
-          createdAt: new Date(m.created_at).toLocaleString("ja-JP"),
-          editedAt: m.edited_at ?? null,
+    const messageList: Message[] = Array.isArray(responseData)
+      ? responseData.map((message) => ({
+          id: message.id,
+          userName: message.user?.name ?? "unknown",
+          body: message.body,
+          isMe: myId ? String(message.user_id) === String(myId) : false,
+          createdAt: message.created_at,
+          editedAt: message.edited_at ?? null,
         }))
       : [];
 
     shouldJumpRef.current = true;
-    setMessages(list);
+    setMessages(messageList);
   }, [roomId, session?.userId]);
+
+  const deleteMessage = async (message: Message) => {
+    if (busy) return;
+
+    setBusy(true);
+
+    try {
+      const response = await fetch(
+        `/api/bff/messages/${message.id}?roomId=${roomId}`,
+        {
+          method: "DELETE",
+          cache: "no-store",
+        },
+      );
+
+      if (response.status === 204 || response.ok) {
+        setMessages((prevMessages) =>
+          prevMessages.filter((prevMessage) => prevMessage.id !== message.id),
+        );
+        toast.success("削除に成功しました");
+        router.refresh();
+        return;
+      }
+
+      const responseData = await response.json().catch(() => null);
+      toast.error(responseData?.error ?? "削除に失敗しました");
+    } catch (error) {
+      console.error(error);
+      toast.error("通信エラーが発生しました");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const updateMessage = async (trimmedText: string) => {
+    if (editingId === null) return;
+
+    if (trimmedText === originalText.trim()) {
+      cancelEdit();
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const response = await fetch(
+        `/api/bff/messages/${editingId}?roomId=${roomId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ body: trimmedText }),
+        },
+      );
+
+      const responseData = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        if (responseData?.error === "edit_window_expired") {
+          toast.error(
+            "このメッセージは送信から1時間を超えたため編集できません。",
+          );
+        } else {
+          toast.error(responseData?.error ?? "編集に失敗しました");
+        }
+        return;
+      }
+
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.id === editingId
+            ? {
+                ...message,
+                body: responseData.body ?? trimmedText,
+                editedAt: responseData.edited_at ?? new Date().toISOString(),
+              }
+            : message,
+        ),
+      );
+
+      cancelEdit();
+      toast.success("編集しました");
+    } catch (error) {
+      console.error(error);
+      toast.error("通信エラーが発生しました");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createMessage = async (trimmedText: string) => {
+    setBusy(true);
+
+    try {
+      const response = await fetch(`/api/bff/messages?roomId=${roomId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId, body: trimmedText }),
+      });
+
+      const responseData = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        toast.error(
+          responseData?.error ||
+            (Array.isArray(responseData?.errors)
+              ? responseData.errors.join("\n")
+              : "送信に失敗しました"),
+        );
+        return;
+      }
+
+      setText("");
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: responseData.id,
+          userName: responseData.user?.name ?? "自分",
+          body: responseData.body,
+          isMe: true,
+          createdAt: responseData.created_at,
+          editedAt: responseData.edited_at ?? null,
+        },
+      ]);
+
+      sessionStorage.setItem("scrollToBottomAfterReload", "1");
+      await loadMessages();
+      shouldJumpRef.current = true;
+      toast.success("送信しました");
+    } catch (error) {
+      console.error(error);
+      toast.error("通信エラーが発生しました");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // -----------------------------
+  // submit
+  // -----------------------------
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const trimmedText = text.trim();
+    if (!trimmedText || busy) return;
+
+    if (editingId !== null) {
+      await updateMessage(trimmedText);
+      return;
+    }
+
+    await createMessage(trimmedText);
+  };
+
+  // -----------------------------
+  // effects
+  // -----------------------------
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("scrollToBottomAfterReload") === "1") {
+      shouldJumpRef.current = true;
+    }
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -172,7 +345,6 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
       requestAnimationFrame(() => {
         jumpToBottom();
         shouldJumpRef.current = false;
-
         sessionStorage.removeItem("scrollToBottomAfterReload");
       });
     });
@@ -188,94 +360,15 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
     };
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const v = text.trim();
-    if (!v) return;
-
-    setText("");
-    if (editingId !== null) {
-      setBusy(true);
-      try {
-        const res = await fetch(
-          `/api/bff/messages/${editingId}?roomId=${roomId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ body: v }),
-          }
-        );
-
-        const data = await res.json().catch(() => null);
-        if (!res.ok) {
-          if (data?.error === "edit_window_expired") {
-            alert("このメッセージは送信から1時間を超えたため編集できません。");
-          } else {
-            alert(data?.error ?? "編集に失敗しました");
-          }
-          return;
-        }
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === editingId
-              ? {
-                  ...m,
-                  body: data.body ?? v,
-                  editedAt: data.edited_at ?? new Date().toISOString(),
-                }
-              : m
-          )
-        );
-
-        setEditingId(null);
-        return;
-      } finally {
-        setBusy(false);
-      }
-    }
-
-    const res = await fetch(`/api/bff/messages?roomId=${roomId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomId, body: v }),
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      alert(
-        data?.error ||
-          (Array.isArray(data?.errors) ? data.errors.join("\n") : "送信失敗")
-      );
-      return;
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: data.id,
-        userName: data.user?.name ?? "自分",
-        body: data.body,
-        isMe: true,
-        createdAt: new Date(data.created_at).toLocaleString("ja-JP"),
-      },
-    ]);
-
-    sessionStorage.setItem("scrollToBottomAfterReload", "1");
-    await loadMessages();
-    shouldJumpRef.current = true;
-  };
-
+  // -----------------------------
+  // render
+  // -----------------------------
   return (
     <div
       className="flex flex-col h-[100dvh] overflow-hidden"
       suppressHydrationWarning
     >
-      {/* 上部ヘッダー */}
-      <header className="h-12 px-3 flex justify-end items-center border-b-2  shadow-sm bg-white ">
+      <header className="h-12 px-3 flex justify-end items-center border-b-2 shadow-sm bg-white">
         <div className="flex justify-end min-w-0 items-center gap-4 text-sm font-semibold text-cyan-400">
           <div className="flex min-w-0 items-center gap-1 max-w-[50%]">
             <span className="shrink-0 sm:text-sm text-xs">ルーム名:</span>
@@ -283,6 +376,7 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
               {roomTitle}
             </span>
           </div>
+
           <div className="shrink-0 whitespace-nowrap sm:text-sm text-xs">
             ルームID:{" "}
             <span className="text-slate-800 font-normal sm:text-sm text-xs">
@@ -290,7 +384,6 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
             </span>
           </div>
 
-          {/* 作成者：縮まない（位置固定） */}
           <div className="shrink-0 whitespace-nowrap md:text-base sm:text-sm text-xs">
             作成者:{" "}
             <span className="text-slate-800 font-normal md:text-base sm:text-sm text-xs">
@@ -300,48 +393,48 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
         </div>
       </header>
 
-      {/* メッセージ一覧*/}
       <div
         ref={listRef}
         className="flex-1 min-h-0 px-3 pt-2 pb-[9rem] overflow-y-auto space-y-3 bg-slate-50"
       >
-        {messages.map((m) => (
+        {messages.map((message) => (
           <div
-            key={m.id}
+            key={message.id}
             className={`w-full flex flex-col ${
-              m.isMe ? "items-start" : "items-end"
+              message.isMe ? "items-start" : "items-end"
             }`}
           >
-            {!m.isMe && (
+            {!message.isMe && (
               <p className="text-[9px] sm:text-sm text-cyan-400">
-                ユーザー<span className="text-[9px] sm:text-sm text-slate-400">:</span>{m.userName}
+                ユーザー
+                <span className="text-[9px] sm:text-sm text-slate-400">:</span>
+                {message.userName}
               </p>
             )}
+
             <p
               className={`text-[9px] sm:text-sm pb-0.5 ${
-                m.isMe ? "text-cyan-400 mt-2" : "text-slate-400"
+                message.isMe ? "text-cyan-400 mt-2" : "text-slate-400"
               }`}
             >
-              {formatJst(m.createdAt)}
-              {m.editedAt && (
-                <span
-                  className="ml-2 md:text-[11px] sm:text-
-              [9px] text-[7px] text-slate-500"
-                >
+              {formatJst(message.createdAt)}
+              {message.editedAt && (
+                <span className="ml-2 md:text-[11px] sm:text-[9px] text-[7px] text-slate-500">
                   (編集済)
                 </span>
               )}
             </p>
+
             <div
               className={`max-w-[80%] w-fit rounded-2xl px-3 py-2 text-xm shadow-sm bg-cyan-400 ${
-                m.isMe
+                message.isMe
                   ? "text-white rounded-bl-sm cursor-pointer"
                   : "text-white rounded-br-sm"
               }`}
-              onClick={(e) => openMenu(e, m)}
+              onClick={(event) => openMenu(event, message)}
             >
               <p className="whitespace-pre-wrap break-words md:text-base sm:text-sm text-xs">
-                {m.body}
+                {message.body}
               </p>
             </div>
           </div>
@@ -354,7 +447,17 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
         )}
       </div>
 
-      {/* 下部入力フォーム*/}
+      {editingId !== null && (
+        <div className="fixed bottom-14 lg:w-11/12 w-full left-1/2 -translate-x-1/2 px-3 z-20">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 rounded-t-2xl border border-slate-200 border-b-0 bg-amber-50 px-4 py-2 text-sm text-amber-700 shadow-sm">
+              編集中です
+            </div>
+            <div className="shrink-0 w-[48px]" />
+          </div>
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit}
         className="fixed bottom-0 lg:w-11/12 w-full left-1/2 -translate-x-1/2 h-14 px-3 flex items-center gap-2 border-t border-slate-200 bg-white z-20"
@@ -363,56 +466,66 @@ const RoomChat = ({ roomId, roomTitle, userName }: RoomChatProps) => {
           suppressHydrationWarning
           type="text"
           className="flex-1 rounded-full border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400"
-          placeholder="メッセージを送信..."
+          placeholder={
+            editingId !== null ? "メッセージを編集..." : "メッセージを送信..."
+          }
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(event) => setText(event.target.value)}
         />
+
         <button
           type="submit"
           className="text-sm font-semibold text-cyan-400 disabled:opacity-40"
-          disabled={!text.trim()}
+          disabled={!text.trim() || busy}
         >
-          送信
+          {editingId !== null ? "保存" : "送信"}
         </button>
+
+        {editingId !== null && (
+          <button
+            type="button"
+            className="text-sm font-semibold text-slate-500"
+            onClick={cancelEdit}
+          >
+            キャンセル
+          </button>
+        )}
       </form>
+
       {menu && selectedMessage && (
         <>
-          {/* メニュー外クリックで閉じる */}
-          <div className="fixed inset-0 z-40" onClick={closeMenu} />
+          <div className="fixed inset-0 z-40 bg-black/5" onClick={closeMenu} />
 
-          {/* メニュー本体 */}
           <div
-            className="fixed z-50 rounded-full border bg-white shadow px-3 py-1 text-sm"
+            className="fixed z-50 w-36 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
             style={{
               left: menu.x,
               top: menu.y,
               transform: "translate(-50%, -100%)",
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="whitespace-nowrap hover:opacity-80"
-                onClick={() => {
-                  closeMenu();
-                  startEdit(selectedMessage);
-                }}
-              >
-                編集
-              </button>
+            <button
+              type="button"
+              className="block w-full px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              onClick={() => {
+                closeMenu();
+                startEdit(selectedMessage);
+              }}
+            >
+              編集
+            </button>
 
-              <button
-                type="button"
-                className="whitespace-nowrap hover:opacity-80 text-red-600"
-                onClick={() => {
-                  closeMenu();
-                  deleteMessage(selectedMessage);
-                }}
-              >
-                削除
-              </button>
-            </div>
+            <button
+              type="button"
+              className="block w-full border-t border-slate-100 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+              onClick={() => {
+                closeMenu();
+                deleteMessage(selectedMessage);
+              }}
+            >
+              削除
+            </button>
           </div>
         </>
       )}

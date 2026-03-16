@@ -3,8 +3,6 @@ import "./globals.css";
 import "@mantine/core/styles.css";
 import RoomsList from "./components/RoomsList";
 import { cookies } from "next/headers";
-import { authOptions } from "@/lib/nextauth/auth";
-import { getServerSession } from "next-auth";
 
 type Room = {
   id: number;
@@ -17,10 +15,7 @@ type Room = {
   };
 };
 
-// 非同期関数の正しい書き方
 const fetchRooms = async (): Promise<Room[]> => {
-  const session = await getServerSession(authOptions);
-  if (!session) return [];
   const res = await fetch(`${process.env.NEXTAUTH_URL}/api/bff/rooms`, {
     cache: "no-store",
     headers: {

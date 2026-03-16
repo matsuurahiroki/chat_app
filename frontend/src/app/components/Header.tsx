@@ -5,6 +5,7 @@ import { Fragment, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Dialog, Transition } from "@headlessui/react";
 import { useRouter, usePathname } from "next/navigation";
+import { toast } from "@/lib/toastPopup";
 
 type Props = {
   onLoginClick: () => void;
@@ -14,10 +15,13 @@ const Header = ({ onLoginClick }: Props) => {
   const route = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
+
   const [isPostOpen, setIsPostOpen] = useState(false);
   const [postTitle, setPostTitle] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -25,65 +29,67 @@ const Header = ({ onLoginClick }: Props) => {
 
   const handlePostClick = () => {
     if (status !== "authenticated") {
-      onLoginClick();
+      toast.error("投稿するにはログインが必要です");
       return;
     }
     setIsPostOpen(true);
   };
 
-  const handlePostSubmit = async (e: React.FormEvent) => {
+  const handlePostSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isPosting) return; // 多重投稿防止
+    if (isPosting) return;
+
     if (!postTitle.trim()) {
-      alert("タイトルを入力してください");
+      toast.error("タイトルを入力してください");
       return;
     }
 
     setIsPosting(true);
     try {
-      // 投稿APIを叩いてルーム作成（BFF経由）
       const res = await fetch("/api/bff/rooms", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: postTitle }),
+        body: JSON.stringify({ title: postTitle.trim() }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        alert(
+        toast.error(
           data?.error
             ? `投稿に失敗しました: ${data.error}`
-            : "投稿に失敗しました"
+            : "投稿に失敗しました",
         );
         return;
       }
 
-      // 必要なら作成された room の id を受け取る
-      // const room = await res.json();
-
-      // 入力クリア & モーダル閉じる
       setPostTitle("");
       setIsPostOpen(false);
-      setIsPosting(false);
+      await sleep(500);
+      toast.success("投稿しました");
 
-      route.push("/");
+      if (pathname === "/") {
+        route.refresh();
+      } else {
+        route.push("/");
+      }
     } catch (err) {
       console.error(err);
-      alert("通信エラーが発生しました");
+      toast.error("通信エラーが発生しました");
+    } finally {
+      setIsPosting(false);
     }
   };
 
   if (status === "loading") {
     return (
-      <header className="w-full md:h-[70px] h-[50px] flex items-center justify-center bg-white shadow-md fixed z-10 " />
+      <header className="fixed z-10 flex h-[50px] w-full items-center justify-center bg-white shadow-md md:h-[70px]" />
     );
   }
 
   const handleLoginClick = () => {
-    // ホーム以外なら / に移動
     if (pathname !== "/") {
       route.push("/");
       onLoginClick();
@@ -91,24 +97,22 @@ const Header = ({ onLoginClick }: Props) => {
       onLoginClick();
     }
   };
-  // ログインモーダルを開く
 
   return (
     <>
-      <header className="w-full md:h-[70px] h-[50px] flex items-center justify-center bg-white shadow-md  z-10 fixed">
-        <div className="flex w-10/12 items-center justify-between h-full mx-9">
+      <header className="fixed z-10 flex h-[50px] w-full items-center justify-center bg-white shadow-md md:h-[70px]">
+        <div className="mx-9 flex h-full w-10/12 items-center justify-between">
           <Button
-            className="px-3 py-4 rounded-lg  hover:bg-slate-100 text-cyan-400 font-sans font-bold md:text-base sm:text-sm text-xs whitespace-nowrap"
+            className="whitespace-nowrap rounded-lg px-3 py-4 font-sans text-xs font-bold text-cyan-400 hover:bg-slate-100 sm:text-sm md:text-base"
             onClick={() => route.push("/")}
           >
             ホーム
           </Button>
 
-          {/* PC用（sm以上） */}
-          <nav className="hidden sm:flex items-center gap-6">
+          <nav className="hidden items-center gap-6 sm:flex">
             <Button
               type="button"
-              className="text-left rounded-lg px-3 py-4 mr-10 md:text-base sm:text-sm text-xs  text-cyan-400 font-semibold hover:bg-slate-100"
+              className="mr-10 rounded-lg px-3 py-4 text-left text-xs font-semibold text-cyan-400 hover:bg-slate-100 sm:text-sm md:text-base"
               onClick={() => {
                 setIsMenuOpen(false);
                 handlePostClick();
@@ -116,16 +120,17 @@ const Header = ({ onLoginClick }: Props) => {
             >
               投稿する
             </Button>
+
             {status === "authenticated" ? (
               <Button
-                className="px-3 py-4 rounded-lg  hover:bg-slate-100 text-cyan-400 font-semibold md:text-base sm:text-sm text-xs whitespace-nowrap"
+                className="whitespace-nowrap rounded-lg px-3 py-4 text-xs font-semibold text-cyan-400 hover:bg-slate-100 sm:text-sm md:text-base"
                 onClick={() => route.push("/profile")}
               >
                 {session?.user?.name ?? "プロフィール"}
               </Button>
             ) : (
               <Button
-                className="text-cyan-400 px-3 py-4 rounded-lg  hover:bg-slate-100 font-sans md:text-base sm:text-sm text-xs font-bold whitespace-nowrap"
+                className="whitespace-nowrap rounded-lg px-3 py-4 font-sans text-xs font-bold text-cyan-400 hover:bg-slate-100 sm:text-sm md:text-base"
                 onClick={handleLoginClick}
               >
                 ログイン / 新規登録
@@ -133,10 +138,9 @@ const Header = ({ onLoginClick }: Props) => {
             )}
           </nav>
 
-          {/* スマホ用（sm未満） */}
           <button
             type="button"
-            className="md:text-base sm:text-sm sm:hidden shrink-0 py-2 text-cyan-400 font-bold text-2xl"
+            className="shrink-0 py-2 text-2xl font-bold text-cyan-400 sm:hidden md:text-base"
             aria-label="メニューを開く"
             onClick={() => setIsMenuOpen(true)}
           >
@@ -157,20 +161,20 @@ const Header = ({ onLoginClick }: Props) => {
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-200"
-              enterFrom="opacity-0 translate-x-4"
-              enterTo="opacity-100 translate-x-0"
+              enterFrom="translate-x-4 opacity-0"
+              enterTo="translate-x-0 opacity-100"
               leave="ease-in duration-150"
-              leaveFrom="opacity-100 translate-x-0"
-              leaveTo="opacity-0 translate-x-4"
+              leaveFrom="translate-x-0 opacity-100"
+              leaveTo="translate-x-4 opacity-0"
             >
               <Dialog.Panel className="h-full w-[75%] max-w-xs bg-white p-4 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <Dialog.Title className="text-cyan-400 font-semibold !text-md">
+                <div className="mb-4 flex items-center justify-between">
+                  <Dialog.Title className="!text-md font-semibold text-cyan-400">
                     メニュー
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="text-cyan-400 font-bold px-2 py-1 block text-2xl"
+                    className="block px-2 py-1 text-2xl font-bold text-cyan-400"
                     aria-label="閉じる"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -181,7 +185,7 @@ const Header = ({ onLoginClick }: Props) => {
                 <div className="flex flex-col gap-2">
                   <button
                     type="button"
-                    className="text-left rounded-lg px-3 py-2 !text-sm text-cyan-400 font-semibold hover:bg-slate-100"
+                    className="text-left rounded-lg px-3 py-2 !text-sm font-semibold text-cyan-400 hover:bg-slate-100"
                     onClick={() => {
                       setIsMenuOpen(false);
                       route.push("/");
@@ -192,7 +196,7 @@ const Header = ({ onLoginClick }: Props) => {
 
                   <button
                     type="button"
-                    className="text-left rounded-lg px-3 py-2 !text-sm text-cyan-400 font-semibold hover:bg-slate-100"
+                    className="text-left rounded-lg px-3 py-2 !text-sm font-semibold text-cyan-400 hover:bg-slate-100"
                     onClick={() => {
                       setIsMenuOpen(false);
                       handlePostClick();
@@ -204,7 +208,7 @@ const Header = ({ onLoginClick }: Props) => {
                   {status === "authenticated" ? (
                     <button
                       type="button"
-                      className="text-left rounded-lg px-3 py-2 text-cyan-400 font-semibold hover:bg-slate-100"
+                      className="text-left rounded-lg px-3 py-2 font-semibold text-cyan-400 hover:bg-slate-100"
                       onClick={() => {
                         setIsMenuOpen(false);
                         route.push("/profile");
@@ -215,7 +219,7 @@ const Header = ({ onLoginClick }: Props) => {
                   ) : (
                     <button
                       type="button"
-                      className="text-left !text-sm rounded-lg px-3 py-2 text-cyan-400 font-semibold hover:bg-slate-100"
+                      className="text-left rounded-lg px-3 py-2 !text-sm font-semibold text-cyan-400 hover:bg-slate-100"
                       onClick={() => {
                         setIsMenuOpen(false);
                         handleLoginClick();
@@ -231,12 +235,13 @@ const Header = ({ onLoginClick }: Props) => {
         </Dialog>
       </Transition>
 
-      {/* 投稿タイトル入力用モーダル */}
       <Transition appear show={isPostOpen} as={Fragment}>
         <Dialog
           as="div"
           className="relative z-20"
-          onClose={() => setIsPostOpen(false)}
+          onClose={() => {
+            if (!isPosting) setIsPostOpen(false);
+          }}
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -244,14 +249,14 @@ const Header = ({ onLoginClick }: Props) => {
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-200"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
+              enterFrom="scale-95 opacity-0"
+              enterTo="scale-100 opacity-100"
               leave="ease-in duration-150"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              leaveFrom="scale-100 opacity-100"
+              leaveTo="scale-95 opacity-0"
             >
               <Dialog.Panel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <Dialog.Title className="text-lg font-semibold text-cyan-400 mb-4">
+                <Dialog.Title className="mb-4 text-lg font-semibold text-cyan-400">
                   新規投稿
                 </Dialog.Title>
 
@@ -259,17 +264,18 @@ const Header = ({ onLoginClick }: Props) => {
                   <div>
                     <label
                       htmlFor="post-title"
-                      className="block text-sm font-semibold text-cyan-400 mb-1"
+                      className="mb-1 block text-sm font-semibold text-cyan-400"
                     >
                       タイトル
                     </label>
                     <input
                       id="post-title"
                       type="text"
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
                       value={postTitle}
                       onChange={(e) => setPostTitle(e.target.value)}
                       placeholder="いまどうしてる？"
+                      disabled={isPosting}
                     />
                   </div>
 
@@ -278,13 +284,14 @@ const Header = ({ onLoginClick }: Props) => {
                       type="button"
                       className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700"
                       onClick={() => setIsPostOpen(false)}
+                      disabled={isPosting}
                     >
                       キャンセル
                     </Button>
                     <Button
                       type="submit"
                       disabled={isPosting}
-                      className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isPosting ? "投稿中..." : "投稿する"}
                     </Button>
@@ -297,6 +304,6 @@ const Header = ({ onLoginClick }: Props) => {
       </Transition>
     </>
   );
-}
+};
 
 export default Header;

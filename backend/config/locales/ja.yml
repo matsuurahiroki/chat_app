@@ -3,3 +3,8 @@ ja:
     errors:
       messages:
         record_invalid: "バリデーションに失敗しました: %{errors}"
+      models:
+        user:
+          attributes:
+            password:
+              complexity_invalid: "は英字と数字をそれぞれ1文字以上含めてください"

@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { signOut } from "next-auth/react";
+import { toast } from "@/lib/toastPopup";
 
 const LogoutTab = () => {
   const [busy, setBusy] = useState(false);
@@ -25,6 +26,7 @@ const LogoutTab = () => {
     } catch (err) {
       console.error(err);
       setMsg("ログアウトに失敗しました。もう一度お試しください。");
+      toast.error("ログアウトに失敗しました。もう一度お試しください。");
       setBusy(false);
     }
   };

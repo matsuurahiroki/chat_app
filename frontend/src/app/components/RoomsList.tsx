@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import type { MouseEvent } from "react";
 import RoomMenuButton from "./RoomMenuButton";
 import ConfirmPopup from "./ConfirmPopup";
+import { toast } from "@/lib/toastPopup";
 
 const formatJST = (iso: string) =>
   new Intl.DateTimeFormat("ja-JP", {
@@ -56,11 +57,13 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
   // ポップアップ
   const [confirmRoom, setConfirmRoom] = useState<Room | null>(null);
   const [busy, setBusy] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleRoomClick = () => (e: MouseEvent<HTMLAnchorElement>) => {
     if (status !== "authenticated") {
       e.preventDefault();
-      alert("ルームを閲覧するにはログインが必要です。");
+      toast.error("投稿するにはログインが必要です");
       onLoginClick?.();
     }
   };
@@ -78,18 +81,20 @@ const RoomsList = ({ rooms, onLoginClick }: Props) => {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        alert(data?.error ?? "削除に失敗しました");
+        toast.error(data?.error ?? "削除に失敗しました");
         return;
       }
 
       // 画面から消す
       setList((prev) => prev.filter((r) => r.id !== confirmRoom.id));
       setConfirmRoom(null);
-
-      // サーバー側の一覧も更新したいなら
       router.refresh();
-    } finally {
       setBusy(false);
+      await sleep(100);
+      toast.success("削除しました");
+    } catch (error) {
+      console.error(error);
+      toast.error("通信エラーが発生しました");
     }
   };
 

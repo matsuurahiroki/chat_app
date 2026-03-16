@@ -21,7 +21,7 @@ class User < ApplicationRecord
     return if password.blank? # 未入力時（更新時など）はここでスキップ
     return if password =~ /\A(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}\z/
 
-    errors.add(:base, 'パスワードは英字と数字をそれぞれ1文字以上含めてください')
+    errors.add(:password, :complexity_invalid)
   end
 end
 

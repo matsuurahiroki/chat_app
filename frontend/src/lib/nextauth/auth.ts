@@ -114,18 +114,26 @@ export const authOptions: NextAuthOptions = {
 
         // 失敗時（既存のままでOK）
         if (!res.ok) {
-          let msg = "認証に失敗しました";
+          let code = "auth_failed";
+
           try {
             const data = JSON.parse(text);
-            if (Array.isArray(data?.errors) && data.errors.length > 0)
-              msg = data.errors.join("\n");
-            else if (typeof data?.error === "string") msg = data.error;
-            else if (text.trim() === "")
-              msg = `空のエラーレスポンスです（status ${res.status}）`;
+
+            if (
+              Array.isArray(data?.error_codes) &&
+              data.error_codes.length > 0
+            ) {
+              code = data.error_codes[0];
+            } else if (typeof data?.error === "string") {
+              code = data.error;
+            } else if (text.trim() === "") {
+              code = `empty_error_response_${res.status}`;
+            }
           } catch {
-            msg = `予期しないエラーが発生しました（status ${res.status} / ${ct}）`;
+            code = `unexpected_error_${res.status}`;
           }
-          throw new Error(msg);
+
+          throw new Error(code);
         }
 
         // login成功 user を返す

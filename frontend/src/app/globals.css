@@ -26,6 +26,10 @@ body {
   box-shadow: -4px -6px 0 rgba(0, 0, 0, 0.15);
 }
 
+.mantine-Notification-root::before {
+  display: none !important;
+}
+
 .no-page-scroll,
 .no-page-scroll html,
 .no-page-scroll body {

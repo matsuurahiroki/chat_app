@@ -1,7 +1,10 @@
 // frontend/src/app/layout.tsx
 
 import "./globals.css";
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
+
 import AppClientShell from "./AppClientShell";
 import AppProviders from "./providers";
 

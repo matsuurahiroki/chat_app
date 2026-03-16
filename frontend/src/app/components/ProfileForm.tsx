@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "@/lib/toastPopup";
 
 type Props = {
   initialName: string;
@@ -35,7 +36,7 @@ const ProfileForm = ({ initialName, initialEmail, userId }: Props) => {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        alert(
+        toast.error(
           data?.error
             ? `更新に失敗しました: ${data.error}`
             : "更新に失敗しました"
@@ -46,10 +47,10 @@ const ProfileForm = ({ initialName, initialEmail, userId }: Props) => {
       // ★ NextAuth のセッション更新時のやつ
       await update({ name, email });
 
-      alert("プロフィールを更新しました");
+      toast.success("プロフィールを更新しました");
     } catch (err) {
       console.error(err);
-      alert("通信エラーが発生しました");
+      toast.error("通信エラーが発生しました");
     } finally {
       setBusy(false); // ④ 最後に必ず false に戻す (finallyは成功失敗関係なく実行される)
     }

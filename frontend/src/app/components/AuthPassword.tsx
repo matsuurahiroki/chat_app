@@ -1,6 +1,7 @@
 // src/app/profile/AuthPasswordPanel.tsx
 "use client";
 
+import { toast } from "@/lib/toastPopup";
 import { useState } from "react";
 
 const AuthPassword = () => {
@@ -16,17 +17,20 @@ const AuthPassword = () => {
 
     try {
       if (newPassword !== newPasswordConfirm) {
-        alert("新しいパスワードが確認用と一致していません");
+        toast.error("新しいパスワードが確認用と一致していません");
+        return;
+      } else if (newPassword === "") {
+        toast.error("新しいパスワードを入力してください");
         return;
       }
 
       // TODO: 後で /api/bff/auth/password などへ接続する
       // const res = await fetch("/api/bff/auth/password", { ... });
 
-      alert("パスワード変更APIはまだ未実装です（UIだけ）");
+      toast.error("パスワード変更APIはまだ未実装です（UIだけ）");
     } catch (err) {
       console.error(err);
-      alert("通信エラーが発生しました");
+      toast.error("通信エラーが発生しました");
     } finally {
       setBusy(false);
     }
@@ -34,7 +38,6 @@ const AuthPassword = () => {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-
       <form className="space-y-5" onSubmit={handleSubmit}>
         {/* 現在のパスワード */}
         <div>
@@ -100,6 +103,6 @@ const AuthPassword = () => {
       </form>
     </div>
   );
-}
+};
 
 export default AuthPassword;
