@@ -20,46 +20,79 @@ describe('/api/bff/rooms route', () => {
   })
 
   describe('GET /api/bff/rooms', () => {
-    it('returns 401 when unauthenticated', async () => {
-      mockGetServerSession.mockResolvedValue(null)
+  it('proxies to rails even when unauthenticated', async () => {
+    mockGetServerSession.mockResolvedValue(null)
 
-      const res = await GET()
-      expect(res.status).toBe(401)
-      await expect(res.json()).resolves.toEqual({ error: 'unauthorized' })
-    })
-
-    it('proxies to rails when ok', async () => {
-      mockGetServerSession.mockResolvedValue({ userId: 10 })
-
-      ;(globalThis.fetch as unknown as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+    ;(globalThis.fetch as unknown as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        rooms: [
+          { id: 1, title: 'room1' },
+          { id: 2, title: 'room2' },
+        ],
+      }),
+      text: async () =>
+        JSON.stringify({
           rooms: [
             { id: 1, title: 'room1' },
             { id: 2, title: 'room2' },
           ],
         }),
-        text: async () =>
-          JSON.stringify({
-            rooms: [
-              { id: 1, title: 'room1' },
-              { id: 2, title: 'room2' },
-            ],
-          }),
-      })
+    })
 
+    const res = await GET()
 
-      const res = await GET()
-      expect(res.status).toBe(200)
-      await expect(res.json()).resolves.toEqual({
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'http://rails.test/api/rooms',
+      {
+        headers: {
+          'X-BFF-Token': 'test-token',
+        },
+        cache: 'no-store',
+      },
+    )
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({
+      rooms: [
+        { id: 1, title: 'room1' },
+        { id: 2, title: 'room2' },
+      ],
+    })
+  })
+
+  it('proxies to rails when ok', async () => {
+    mockGetServerSession.mockResolvedValue({ userId: 10 })
+
+    ;(globalThis.fetch as unknown as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
         rooms: [
           { id: 1, title: 'room1' },
           { id: 2, title: 'room2' },
         ],
-      })
+      }),
+      text: async () =>
+        JSON.stringify({
+          rooms: [
+            { id: 1, title: 'room1' },
+            { id: 2, title: 'room2' },
+          ],
+        }),
+    })
+
+    const res = await GET()
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({
+      rooms: [
+        { id: 1, title: 'room1' },
+        { id: 2, title: 'room2' },
+      ],
     })
   })
+})
 
   describe('POST /api/bff/rooms', () => {
     it('returns 401 when unauthenticated', async () => {
