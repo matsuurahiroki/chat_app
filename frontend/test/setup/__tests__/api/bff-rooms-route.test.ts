@@ -10,10 +10,11 @@ jest.mock('next-auth', () => ({
   getServerSession: () => mockGetServerSession(),
 }))
 
+  process.env.BACKEND_API_URL = 'http://rails.test'
+  process.env.BFF_SHARED_TOKEN = 'test-token'
+
 describe('/api/bff/rooms route', () => {
   beforeEach(() => {
-    process.env.BACKEND_API_URL = 'http://rails.test'
-    process.env.BFF_SHARED_TOKEN = 'test-token'
 
     mockGetServerSession.mockReset()
     globalThis.fetch = jest.fn() as unknown as typeof fetch
