@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   namespace :api do
-    resource :user, only: [:destroy] # => DELETE /api/user resourcesは複数形ではなく単数形
+    resource :user, only: [:destroy] do # => DELETE /api/user resourcesは複数形ではなく単数形
+      patch :password, to: 'users#update_password'
+    end
     resources :users, only: [:update]
     resources :rooms, only: %i[index create show destroy] do
       resources :messages, only: %i[index create show update destroy]

@@ -3,7 +3,7 @@ AllCops:
   SuggestExtensions: false
   TargetRubyVersion: 3.3
   Include:
-    - "backend/**/*.rb"
+    - "**/*.rb"
   Exclude:
     - "bin/*"
     - "db/schema.rb"
@@ -13,7 +13,6 @@ AllCops:
     - "tmp/**/*"
     - "log/**/*"
     - "test/**/*"
-    - "../frontend/**/*"
     - "**/Rakefile"
     - "**/Gemfile"
     - "**/Capfile"

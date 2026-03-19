@@ -1,35 +1,70 @@
-// src/app/profile/AuthPasswordPanel.tsx
 "use client";
 
 import { toast } from "@/lib/toastPopup";
 import { useState } from "react";
 
 const AuthPassword = () => {
-  const [currentPassword, setCurrentPassword] = useState<string>();
-  const [newPassword, setNewPassword] = useState<string>();
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState<string>("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (busy) return;
+
+    if (!currentPassword.trim()) {
+      toast.error("現在のパスワードを入力してください");
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      toast.error("新しいパスワードを入力してください");
+      return;
+    }
+
+    if (!newPasswordConfirm.trim()) {
+      toast.error("確認用の新しいパスワードを入力してください");
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirm) {
+      toast.error("新しいパスワードが確認用と一致していません");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      toast.error("現在のパスワードとは別の新しいパスワードを入力してください");
+      return;
+    }
+
     setBusy(true);
 
     try {
-      if (newPassword !== newPasswordConfirm) {
-        toast.error("新しいパスワードが確認用と一致していません");
-        return;
-      } else if (newPassword === "") {
-        toast.error("新しいパスワードを入力してください");
+      // TODO: 後で /api/bff/auth/password などへ接続する
+      const response = await fetch("/api/bff/auth/password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          password: newPassword,
+          password_confirmation: newPasswordConfirm,
+        }),
+      });
+
+      const responseData = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        toast.error(responseData?.error ?? "パスワードの変更に失敗しました");
         return;
       }
 
-      // TODO: 後で /api/bff/auth/password などへ接続する
-      // const res = await fetch("/api/bff/auth/password", { ... });
-
-      toast.error("パスワード変更APIはまだ未実装です（UIだけ）");
-    } catch (err) {
-      console.error(err);
+      toast.success("パスワードを変更しました");
+      setCurrentPassword("");
+      setNewPassword("");
+      setNewPasswordConfirm("");
+    } catch (error) {
+      console.error(error);
       toast.error("通信エラーが発生しました");
     } finally {
       setBusy(false);
@@ -39,7 +74,6 @@ const AuthPassword = () => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
       <form className="space-y-5" onSubmit={handleSubmit}>
-        {/* 現在のパスワード */}
         <div>
           <label
             htmlFor="current-password"
@@ -52,11 +86,10 @@ const AuthPassword = () => {
             type="password"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 sm:text-sm text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
             value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            onChange={(event) => setCurrentPassword(event.target.value)}
           />
         </div>
 
-        {/* 新しいパスワード */}
         <div>
           <label
             htmlFor="new-password"
@@ -69,11 +102,10 @@ const AuthPassword = () => {
             type="password"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 sm:text-sm text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={(event) => setNewPassword(event.target.value)}
           />
         </div>
 
-        {/* 新しいパスワード（確認） */}
         <div>
           <label
             htmlFor="new-password-confirm"
@@ -84,17 +116,21 @@ const AuthPassword = () => {
           <input
             id="new-password-confirm"
             type="password"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 sm:text-sm text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-slate-50"
             value={newPasswordConfirm}
-            onChange={(e) => setNewPasswordConfirm(e.target.value)}
+            onChange={(event) => setNewPasswordConfirm(event.target.value)}
           />
         </div>
 
-        {/* ボタン */}
         <div className="pt-2">
           <button
             type="submit"
-            disabled={busy}
+            disabled={
+              busy ||
+              !currentPassword.trim() ||
+              !newPassword.trim() ||
+              !newPasswordConfirm.trim()
+            }
             className="w-full md:w-48 rounded-lg bg-cyan-400 text-white text-sm sm:text-base font-semibold py-2 hover:bg-cyan-600 disabled:opacity-60"
           >
             {busy ? "変更中..." : "パスワードを変更"}

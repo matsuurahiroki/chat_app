@@ -40,5 +40,3 @@ group :development, :test do
   gem 'simplecov-lcov', require: false
   gem 'solargraph', require: false
 end
-
-gem 'letter_opener_web', '~> 3.0', group: :development

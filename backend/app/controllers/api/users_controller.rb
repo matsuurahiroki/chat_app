@@ -27,6 +27,30 @@ module Api
       end
     end
 
+    def update_password
+      user = User.find_by(id: params[:user_id])
+
+      if user.nil?
+        render json: { error: 'user_not_found' }, status: :not_found
+        return
+      end
+
+      unless user.valid_password?(params[:current_password])
+        render json: { error: 'current_password_is_invalid' }, status: :unauthorized
+        return
+      end
+
+      if user.update_with_password(
+        current_password: params[:current_password],
+        password: params[:password],
+        password_confirmation: params[:password_confirmation]
+      )
+        render json: { message: 'password_updated' }, status: :ok
+      else
+        render json: { error: user.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      end
+    end
+
     def destroy
       user = current_user
       if user.nil?
