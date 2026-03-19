@@ -1,5 +1,3 @@
-// src/lib/auth/errorMessages.ts
-
 export const errorMessages = (code?: string) => {
   switch (code) {
     case "email_not_confirmed":
@@ -40,13 +38,22 @@ export const errorMessages = (code?: string) => {
       return "送信データの形式が不正です。";
 
     case "BACKEND_API_URL undefined":
-      return "サーバー設定エラーです。";
+      return "サーバー設定エラーです。BACKEND_API_URLが設定されてません";
 
     case "BFF internal error":
       return "サーバー内部エラーが発生しました。";
 
     case "password_invalid_multiple":
       return "パスワードは6文字以上且つ英字と数字をそれぞれ1文字以上含めてください。";
+
+    case "fetch failed":
+      return "サーバーへの接続に失敗しました。AWSが起動していないかもしれないです";
+
+    case "getaddrinfo ENOTFOUND":
+      return "サーバーに接続できませんでした。AWSが起動していないかもしれないです";
+
+    case "api.chatroomblog.com":
+      return "APIサーバーに接続できませんでした。AWSが起動していないかもしれないです";
 
     default:
       return "登録またはログインに失敗しました。";
