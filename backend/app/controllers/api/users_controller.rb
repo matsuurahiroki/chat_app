@@ -53,17 +53,35 @@ module Api
 
     def destroy
       user = current_user
-      if user.nil?
-        uid = request.headers['X-User-Id'].to_s
-        return head :bad_request if uid.blank?
 
-        user = User.find_by(id: uid)
+      if user.nil?
+        user_id = request.headers['X-User-Id'].to_s
+        return render json: { error: 'user_id_missing' }, status: :bad_request if user_id.blank?
+
+        user = User.find_by(id: user_id)
       end
-      return head :not_found unless user
+
+      if user.nil?
+        render json: { error: 'user_not_found' }, status: :not_found
+        return
+      end
+
+      current_password = params[:current_password].to_s
+
+      if current_password.blank?
+        render json: { error: 'missing_current_password' }, status: :bad_request
+        return
+      end
+
+      unless user.valid_password?(current_password)
+        render json: { error: 'current_password_is_invalid' }, status: :unauthorized
+        return
+      end
 
       user.destroy!
       reset_session
-      head :no_content
+
+      render json: { message: 'account_deleted' }, status: :ok
     end
 
     private

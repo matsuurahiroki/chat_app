@@ -7,11 +7,8 @@ import { Button, Dialog, Transition } from "@headlessui/react";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "@/lib/toastPopup";
 
-type Props = {
-  onLoginClick: () => void;
-};
 
-const Header = ({ onLoginClick }: Props) => {
+const Header = ({ onLoginClick }: { onLoginClick: () => void }) => {
   const route = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();

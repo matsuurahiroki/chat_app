@@ -3,11 +3,11 @@
 # app/models/user.rb
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
-         :validatable, # :confirmable,
+         :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: Devise::JWT::RevocationStrategies::Null
 
-  has_many :identities, dependent: :destroy # Outh関連のデータ
   has_many :rooms, dependent: :destroy # 作成したルーム
+  has_many :identities, dependent: :destroy # Auth関連のデータ
   has_many :messages, dependent: :destroy # 送信したメッセージ
 
   def jwt_subject
