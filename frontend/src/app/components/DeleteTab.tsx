@@ -31,11 +31,12 @@ const LogoutTab = () => {
       setBusy_l(false);
     }
   };
+
   const handleSignOut = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (busy_l) return;
+    if (busy_s) return;
 
-    setBusy_l(true);
+    setBusy_s(true);
     setMsg(null);
 
     try {
