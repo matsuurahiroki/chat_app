@@ -40,3 +40,4 @@ group :development, :test do
   gem 'simplecov-lcov', require: false
   gem 'solargraph', require: false
 end
+
