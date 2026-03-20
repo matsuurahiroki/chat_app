@@ -1,20 +1,26 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  host: postgre-db
   port: 5432
-  username: dbusera
-  password: "0000"
   pool: 5
 
 development:
   <<: *default
+  host: localhost
+  username: dbusera
+  password: "0000"
   database: chatapp_development
 
 test:
   <<: *default
+  host: localhost
+  username: dbusera
+  password: "0000"
   database: chatapp_test
 
 production:
   <<: *default
+  host: postgre-db
+  username: dbusera
+  password: "0000"
   database: chatapp_production

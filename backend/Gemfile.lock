@@ -383,14 +383,6 @@ GEM
       yard (~> 0.9, >= 0.9.24)
       yard-activesupport-concern (~> 0.0)
       yard-solargraph (~> 0.1)
-    sprockets (4.2.2)
-      concurrent-ruby (~> 1.0)
-      logger
-      rack (>= 2.2.4, < 4)
-    sprockets-rails (3.5.2)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      sprockets (>= 3.0.0)
     stringio (3.2.0)
     thor (1.5.0)
     tilt (2.6.1)
@@ -456,7 +448,6 @@ DEPENDENCIES
   simplecov
   simplecov-lcov
   solargraph
-  sprockets-rails
 
 RUBY VERSION
    ruby 3.3.10p183

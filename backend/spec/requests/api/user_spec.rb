@@ -3,7 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe 'User Resource API', type: :request do
-  let(:user) { create_confirmed_user }
+  let(:password) { 'password123' }
+  let(:user) { create_confirmed_user(password:) }
+
   let(:headers) do
     {
       'X-BFF-Token' => ENV.fetch('BFF_SHARED_TOKEN'),
@@ -12,9 +14,14 @@ RSpec.describe 'User Resource API', type: :request do
     }
   end
 
-  it 'DELETE /api/user ログイン済みは 200/204' do
+  it 'DELETE /api/user 現在のパスワードが正しければ 200' do
     sign_in user
-    delete '/api/user', headers: headers, as: :json
-    expect([200, 204]).to include(response.status)
+
+    delete '/api/user',
+           params: { current_password: password },
+           headers: headers,
+           as: :json
+
+    expect(response.status).to eq(200)
   end
 end

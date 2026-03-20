@@ -6,7 +6,6 @@ Rails.application.routes.draw do
   get '/health', to: proc { [200, { 'Content-Type' => 'text/plain' }, ['ok']] }
 
   devise_for :users, defaults: { format: :json } # 既存
-  mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   namespace :api do
     resource :user, only: [:destroy] do # => DELETE /api/user resourcesは複数形ではなく単数形

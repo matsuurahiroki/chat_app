@@ -26,7 +26,6 @@ gem 'dotenv-rails'              # .env読み込み
 gem 'puma'                      # アプリケーションサーバー
 
 gem 'bootsnap', require: false
-gem 'sprockets-rails'
 
 gem 'rails-i18n'
 
@@ -40,4 +39,3 @@ group :development, :test do
   gem 'simplecov-lcov', require: false
   gem 'solargraph', require: false
 end
-
