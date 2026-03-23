@@ -42,8 +42,6 @@ Rails.application.configure do
   # Active Storage はローカル保存
   config.active_storage.service = :local
 
-  # 今はメール認証や letter_opener_web を使わないので、
-  # メール送信自体は無効にしておく
   config.action_mailer.perform_deliveries = false
 
   # メール送信まわりのキャッシュはしない
